@@ -20,6 +20,27 @@
 }
 .header-inner { min-height: 76px; border: 0; }
 .header-meta { color: #777; }
+.brand-mark, .footer-logo { display: inline-block; line-height: 0; }
+/* Display the supplied artwork unchanged, framing only its excess white margin.
+   Source: 1536 x 1024; visible frame: x544 y166, 448 x 656. */
+.logo-window {
+  position: relative;
+  display: block;
+  width: 42px;
+  aspect-ratio: 448 / 656;
+  overflow: hidden;
+  mix-blend-mode: multiply;
+}
+.logo-window img {
+  position: absolute;
+  width: 342.857143%;
+  max-width: none;
+  height: auto;
+  left: -121.428571%;
+  top: -25.304878%;
+}
+.header-inner { min-height: 88px; }
+.footer-logo .logo-window { width: 50px; }
 .eyebrow { font: 500 9px/1.6 var(--latin); letter-spacing: .14em; }
 
 /* Split cover, with a visible white frame at every desktop size. */
@@ -132,12 +153,14 @@
 .story-intro .eyebrow { color: #75736d; font-size: 8px; max-width: 230px; }
 .story-intro h2 { font-size: clamp(24px,2.1vw,30px); font-weight: 400; line-height: 1.5; letter-spacing: -.055em; margin: 23px 0; }
 .story-description { font-size: 11px; color: #6e6a62; line-height: 2; }
+.story-description + .story-description { margin-top: 12px; }
 .outlined { border: 1px solid #b9b4a9; background: transparent; margin-top: 24px; }
 .story-photo img { width: 100%; aspect-ratio: 4/5; object-fit: cover; }
 .story-photo figcaption { font: 8px/1.5 var(--latin); letter-spacing: .06em; color: #777268; margin-top: 10px; }
 .story-photo-main { grid-column: 2; grid-row: 1; align-self: start; }
 .story-symbol { grid-column: 3; grid-row: 1; justify-self: center; align-self: start; width: 55%; color: #6c695e; }
 .story-symbol svg { width: 100%; height: auto; }
+.story-symbol .logo-window { width: min(90px, 85%); margin: 10px auto 22px; }
 .story-symbol span { display: block; text-align: center; font: 9px/1.7 var(--latin); letter-spacing: .12em; }
 .story-photo-small { grid-column: 1; grid-row: 2; width: 65%; margin-left: 22%; margin-top: 12px; }
 .story-type { grid-column: 2; grid-row: 2; align-self: center; font: 400 clamp(25px,2.6vw,36px)/1.15 var(--latin); letter-spacing: -.05em; color: #888372; }
@@ -166,7 +189,8 @@
 }
 @media (max-width: 760px) {
   :root { --page-gutter: 24px; }
-  .header-inner { min-height: 70px; grid-template-columns: auto 1fr; grid-template-rows: auto; }
+  .header-inner { min-height: 78px; grid-template-columns: auto 1fr; grid-template-rows: auto; }
+  .brand-mark .logo-window { width: 35px; }
   .primary-nav { grid-column: 2; grid-row: 1; justify-self: end; gap: 22px; }
   .primary-nav a { font-size: 9px; padding: 16px 0; }
   .primary-nav a::after { bottom: 9px; }
@@ -216,7 +240,7 @@
 @media (max-width: 540px) {
   :root { --page-gutter: 22px; }
   .announcement { font-size: 8px; gap: 7px; }
-  .header-inner { min-height: 68px; }
+  .header-inner { min-height: 78px; }
   .brand-mark { font-size: 17px; }
   .brand-mark > span:first-child { font-size: 15px; }
   .primary-nav { gap: 17px; }
