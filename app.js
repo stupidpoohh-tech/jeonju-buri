@@ -19,6 +19,49 @@ const grid = document.querySelector('#productGrid');
 const shopCount = document.querySelector('#shopCount');
 const dialog = document.querySelector('#productDialog');
 let currentFilter = 'all';
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+let revealObserver;
+
+function setupScrollReveal() {
+  revealObserver?.disconnect();
+  const activePage = document.querySelector('.page:not([hidden])');
+  const elements = activePage.querySelectorAll(
+    '.editorial-heading, .selected-card, .collection-note, .category-tile, ' +
+    '.editorial-story > *, .brand-visual, .brand-manifesto, .brand-bottom-photo, .product-card'
+  );
+  if (motionPreference.matches || !('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.remove('reveal'));
+    return;
+  }
+  revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -24px 0px' });
+  elements.forEach(el => {
+    const bounds = el.getBoundingClientRect();
+    const inView = bounds.top < window.innerHeight - 24 && bounds.bottom > 0;
+    const staggered = el.matches('.selected-card, .category-tile, .product-card');
+    const index = staggered ? Array.from(el.parentElement.children).indexOf(el) : 0;
+    // Small stagger; no scroll listeners or continuous parallax on mobile.
+    el.style.setProperty('--reveal-delay', `${(index % 4) * 65}ms`);
+    el.classList.add('reveal');
+    el.classList.toggle('is-visible', inView);
+    if (!inView) revealObserver.observe(el);
+  });
+}
+
+motionPreference.addEventListener('change', setupScrollReveal);
+document.addEventListener('focusin', event => {
+  const target = event.target.closest('.reveal');
+  if (target) {
+    target.classList.add('is-visible');
+    revealObserver?.unobserve(target);
+  }
+});
 
 function renderProducts() {
   const listed = currentFilter === 'all' ? products : products.filter(p => p.category === currentFilter);
@@ -70,7 +113,10 @@ function setFilter(filter) {
 }
 document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{
   const hash=button.dataset.filter==='all'?'#shop':'#shop/'+button.dataset.filter;
-  if(location.hash===hash)setFilter(button.dataset.filter); else location.hash=hash;
+  if(location.hash===hash) {
+    setFilter(button.dataset.filter);
+    setupScrollReveal();
+  } else location.hash=hash;
 }));
 
 function renderHomeProducts() {
@@ -101,6 +147,7 @@ function route() {
   if(dialog.open)dialog.close();
   window.scrollTo({top:0,behavior:'instant'});
   document.title = `${page==='home'?'전주BURI':({brand:'BRAND',shop:'SHOP',notice:'NOTICE'}[page]+' | 전주BURI')} — 전주의 새로운 주전부리`;
+  setupScrollReveal();
 }
 
 window.addEventListener('hashchange',route);
