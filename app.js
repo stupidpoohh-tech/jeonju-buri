@@ -59,17 +59,35 @@ document.querySelector('#closeDialog').addEventListener('click',closeProduct);
 document.querySelector('#dialogBack').addEventListener('click',closeProduct);
 dialog.addEventListener('click',e=>{if(e.target===dialog) closeProduct()});
 
-document.querySelectorAll('[data-filter]').forEach(button => {
-  button.addEventListener('click',()=>{
-    currentFilter=button.dataset.filter;
-    document.querySelectorAll('[data-filter]').forEach(el=>{
-      const selected=el===button;
-      el.classList.toggle('is-active',selected);
-      el.setAttribute('aria-pressed',String(selected));
-    });
-    renderProducts();
+function setFilter(filter) {
+  currentFilter = ['chocolate','cookie','tea'].includes(filter) ? filter : 'all';
+  document.querySelectorAll('[data-filter]').forEach(el=>{
+    const selected=el.dataset.filter===currentFilter;
+    el.classList.toggle('is-active',selected);
+    el.setAttribute('aria-pressed',String(selected));
   });
-});
+  renderProducts();
+}
+document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{
+  const hash=button.dataset.filter==='all'?'#shop':'#shop/'+button.dataset.filter;
+  if(location.hash===hash)setFilter(button.dataset.filter); else location.hash=hash;
+}));
+
+function renderHomeProducts() {
+  const selectedIds=['giwa-collection','jeonju-moon','gonggi-cookie','lotus-tea'];
+  document.querySelector('#homeProductGrid').replaceChildren(...selectedIds.map(id=>{
+    const p=products.find(item=>item.id===id);
+    const card=document.createElement('article');
+    card.className='selected-card';
+    const button=document.createElement('button');
+    button.type='button';
+    button.setAttribute('aria-label',p.name+' 상세 보기');
+    button.innerHTML=`<div class="selected-image"><img src="${p.image}" alt="${p.alt}" loading="lazy" decoding="async"></div><div class="selected-meta"><div><h3>${p.name}</h3><p>${p.en}</p></div><span aria-hidden="true">↗</span></div>`;
+    button.addEventListener('click',()=>openProduct(p));
+    card.append(button);
+    return card;
+  }));
+}
 
 function route() {
   const requested = location.hash.replace('#','').split('/')[0];
@@ -79,6 +97,7 @@ function route() {
     const link=document.querySelector(`[data-nav="${name}"]`);
     if (name===page) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
   }
+  if(page==='shop')setFilter(location.hash.split('/')[1]);
   if(dialog.open)dialog.close();
   window.scrollTo({top:0,behavior:'instant'});
   document.title = `${page==='home'?'전주BURI':({brand:'BRAND',shop:'SHOP',notice:'NOTICE'}[page]+' | 전주BURI')} — 전주의 새로운 주전부리`;
@@ -86,4 +105,5 @@ function route() {
 
 window.addEventListener('hashchange',route);
 renderProducts();
+renderHomeProducts();
 route();
