@@ -191,9 +191,9 @@ function setupMovingWindow() {
   const stage=root.querySelector('.window-stage');
   const name=root.querySelector('#windowName'), count=root.querySelector('#windowCount');
   const previous=root.querySelector('#windowPrevious'), next=root.querySelector('#windowNext');
-  const play=root.querySelector('#windowPlay'), status=root.querySelector('#windowStatus');
+  const status=root.querySelector('#windowStatus');
   let index=0, timer, busy=false, inView=false, firstReady=false;
-  let paused=motionPreference.matches, request=0, complete=null, suppressClickUntil=0;
+  let request=0, complete=null, suppressClickUntil=0;
   const images=new Map();
   const load=i=>{
     if(!images.has(i)) {
@@ -205,8 +205,6 @@ function setupMovingWindow() {
   const available=()=>currentPage==='home' && inView && !document.hidden && !dialog.open;
   const updateControls=()=>{
     previous.setAttribute('aria-disabled',String(busy));next.setAttribute('aria-disabled',String(busy));
-    play.textContent=paused?'재생':'일시정지';
-    play.setAttribute('aria-label',paused?'쇼윈도 자동 재생':'쇼윈도 자동 재생 일시정지');
   };
   const suspend=()=>{
     request++;
@@ -216,7 +214,7 @@ function setupMovingWindow() {
   function sync() {
     clearTimeout(timer);
     if(!available())suspend();
-    if(available() && !paused && !busy && firstReady)timer=setTimeout(()=>change(1,false),5500);
+    if(available() && !busy && firstReady)timer=setTimeout(()=>change(1,false),5500);
   }
   async function change(direction,manual=true) {
     if(busy || !available())return;
@@ -251,7 +249,6 @@ function setupMovingWindow() {
     Promise.all(animations.map(a=>a.finished)).then(()=>{if(ticket===request)complete?.()},()=>{});
   }
   previous.addEventListener('click',()=>change(-1));next.addEventListener('click',()=>change(1));
-  play.addEventListener('click',()=>{paused=!paused;updateControls();sync()});
   stage.addEventListener('click',event=>{
     if(event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
     event.preventDefault();
@@ -280,14 +277,14 @@ function setupMovingWindow() {
   stage.addEventListener('pointercancel',()=>{touch=null});
   document.addEventListener('visibilitychange',sync);
   motionPreference.addEventListener('change',()=>{
-    if(motionPreference.matches){paused=true;suspend()}
+    if(motionPreference.matches)suspend();
     updateControls();sync();
   });
   new MutationObserver(sync).observe(dialog,{attributes:true,attributeFilter:['open']});
   if('IntersectionObserver' in window) {
     new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;sync()},{threshold:0}).observe(stage);
   } else inView=true;
-  [previous,next,play].forEach(button=>button.hidden=false);updateControls();
+  [previous,next].forEach(button=>button.hidden=false);updateControls();
   stage.querySelector('img').decode().then(()=>{
     firstReady=true;load(1);sync();
   },()=>{firstReady=true;sync()});
