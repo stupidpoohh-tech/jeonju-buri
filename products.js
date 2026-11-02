@@ -284,7 +284,7 @@ const products = [
     "en": "CLAY FIGURINE COOKIE",
     "category": "cookie",
     "categoryLabel": "COOKIE",
-    "image": "assets/clay-figurine-cookie.webp",
+    "image": "9A0E39BD-00E5-4F4F-A198-B88F125E5B16.png",
     "alt": "초기철기 흙인형의 표정을 닮은 둥근 쿠키와 짙은 먹색의 반원형 패키지를 연출한 기획 시안",
     "description": "전주시 덕진구 중동에서 2012년 발굴된 초기철기시대 흙인형의 둥근 얼굴과 구멍 난 표정을 쿠키로 재해석한 시안입니다. 거친 질감의 쿠키를 세워 담고, 유물의 표정과 발굴 정보를 패키지에 담았습니다. 실제 레시피와 제작 사양은 검증 전입니다.",
     "size": [
