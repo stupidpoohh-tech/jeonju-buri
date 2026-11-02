@@ -1,7 +1,6 @@
 /* Art direction: photo-led cover, unequal editorial spreads, neutral frame. */
 :root { --accent:#282b27; --paper:#fafaf8; --muted:#686965; }
-.header-inner { min-height:96px; }
-.announcement { background:white; border-bottom:1px solid #eee; }
+.header-inner { min-height:92px; }
 .button { background:transparent; border:0; border-bottom:1px solid var(--ink); padding:12px 0; min-width:160px; }
 .button:hover { background:transparent; color:#686965; }
 .home-cover { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:24px; align-items:end; padding-top:32px; }
@@ -166,45 +165,23 @@
   .reveal.is-visible,.reveal:focus-within { transform:none; }
 }
 
-/* Mobile header: compact optical spacing with balanced labels. */
-@media (max-width:760px) {
-  .header-inner {
-    display:flex;
-    align-items:center;
-    min-height:0;
-    gap:12px;
-    padding-top:7px;
-    padding-bottom:7px;
-  }
-  .site-header .brand-mark {
-    flex:0 0 28px;
-    min-width:28px;
-    min-height:44px;
-  }
-  .site-header .logo-window { width:28px; }
-  .primary-nav {
-    display:flex;
-    flex:1 1 auto;
-    justify-content:space-between;
-    align-items:center;
-    min-width:0;
-    grid-column:auto;
-    gap:6px;
-    padding:0;
-  }
-  .primary-nav a {
-    flex:0 0 auto;
-    min-width:0;
-    min-height:44px;
-    padding-inline:2px;
-    font-size:clamp(10px,2.85vw,11.5px);
-    letter-spacing:0;
-    white-space:nowrap;
-  }
-  .primary-nav a[aria-current]::after {
-    bottom:1px;
-    left:2px;
-    right:2px;
-  }
+/* Header: one balanced row, with a desktop wordmark. */
+.header-inner { grid-template-columns:1fr auto 1fr; gap:24px; }
+.site-header .logo-window { width:38px; }
+.primary-nav { gap:24px; }
+.header-wordmark { justify-self:end; font:500 17px/1.4 var(--body); letter-spacing:-.04em; white-space:nowrap; }
+@media(max-width:760px) {
+  .header-inner { grid-template-columns:44px minmax(0,1fr); gap:16px; min-height:74px; padding-block:10px; }
+  .site-header .brand-mark { min-width:44px; min-height:48px; }
+  .site-header .logo-window { width:32px; }
+  .header-wordmark { display:none; }
+  .primary-nav { grid-column:auto; display:flex; align-items:center; justify-content:space-between; gap:6px; padding:0; min-width:0; }
+  .primary-nav a { min-width:44px; min-height:44px; padding:0; font-size:11px; letter-spacing:0; white-space:nowrap; }
+  .primary-nav a[aria-current]::after { bottom:3px; }
   .home-cover { padding-top:18px; }
+}
+@media(max-width:359px) {
+  .header-inner { gap:8px; }
+  .primary-nav { gap:2px; }
+  .primary-nav a { font-size:10px; }
 }

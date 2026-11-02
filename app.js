@@ -9,6 +9,8 @@ let lastOpener = null;
 let openProductId = null;
 let revealObserver;
 let logoRun = 0;
+let logoTimer;
+let logoInView = false;
 const logoPaths = [...document.querySelectorAll('.logo-trace')];
 const logoTimings = [[0,1100],[900,250],[1100,650],[1650,400],[1950,450],[2300,300],[2550,250]];
 const logoAsset = new Image();
@@ -16,13 +18,14 @@ logoAsset.src = document.querySelector('.brand-drawing image').getAttribute('hre
 // Wait for the original artwork, including on a slow first visit.
 const logoReady = logoAsset.decode().then(()=>true,()=>false);
 function stopBrandLogo() {
+  clearTimeout(logoTimer);
   logoRun++;
   logoPaths.forEach(path=>path.getAnimations().forEach(animation=>animation.cancel()));
 }
-async function playBrandLogo(explicit = false) {
+async function playBrandLogo() {
   stopBrandLogo();
   const run = logoRun;
-  if (motionPreference.matches && !explicit) return;
+  if (motionPreference.matches || !logoInView) return;
   const ready = await logoReady;
   if (!ready || run !== logoRun || currentPage !== 'brand' || document.hidden) return;
   // Two painted frames keep the first stroke visible after route changes.
@@ -34,7 +37,16 @@ async function playBrandLogo(explicit = false) {
       delay:delay+180,duration,easing:'ease-out',fill:'backwards'
     });
   });
+  // Hold the finished mark, then draw again while the artwork is visible.
+  logoTimer = setTimeout(playBrandLogo, 6200);
 }
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(entries=>{
+    logoInView = entries[0].isIntersecting;
+    if (logoInView && currentPage === 'brand') playBrandLogo();
+    else stopBrandLogo();
+  }).observe(document.querySelector('.brand-drawing'));
+} else logoInView = true;
 motionPreference.addEventListener('change',()=>{
   if (motionPreference.matches) stopBrandLogo();
   else if (currentPage === 'brand') playBrandLogo();
@@ -192,7 +204,7 @@ function setupMovingWindow() {
   const name=root.querySelector('#windowName'), count=root.querySelector('#windowCount');
   const previous=root.querySelector('#windowPrevious'), next=root.querySelector('#windowNext');
   const status=root.querySelector('#windowStatus');
-  let index=0, timer, busy=false, inView=false, firstReady=false;
+  let index=0, timer, busy=false, firstReady=false;
   let request=0, complete=null, suppressClickUntil=0;
   const images=new Map();
   const load=i=>{
@@ -202,7 +214,7 @@ function setupMovingWindow() {
     }
     return images.get(i);
   };
-  const available=()=>currentPage==='home' && inView && !document.hidden && !dialog.open;
+  const available=()=>currentPage==='home' && !document.hidden && !dialog.open;
   const updateControls=()=>{
     previous.setAttribute('aria-disabled',String(busy));next.setAttribute('aria-disabled',String(busy));
   };
@@ -214,7 +226,7 @@ function setupMovingWindow() {
   function sync() {
     clearTimeout(timer);
     if(!available())suspend();
-    if(available() && !busy && firstReady)timer=setTimeout(()=>change(1,false),5500);
+    if(available() && !busy && firstReady)timer=setTimeout(()=>change(1,false),4000);
   }
   async function change(direction,manual=true) {
     if(busy || !available())return;
@@ -281,9 +293,6 @@ function setupMovingWindow() {
     updateControls();sync();
   });
   new MutationObserver(sync).observe(dialog,{attributes:true,attributeFilter:['open']});
-  if('IntersectionObserver' in window) {
-    new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;sync()},{threshold:0}).observe(stage);
-  } else inView=true;
   [previous,next].forEach(button=>button.hidden=false);updateControls();
   stage.querySelector('img').decode().then(()=>{
     firstReady=true;load(1);sync();
