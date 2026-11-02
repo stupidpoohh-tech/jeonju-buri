@@ -96,7 +96,7 @@ function openProduct(p, opener = null) {
     <figure class="detail-hero">${imageWindow(p)}<figcaption>${p.id==='cookie-tower'?'완성된 모습 · 투명 돔 안에 세운 쿠키탑.':'대표 장면 · 제품과 패키지 기획 시안.'}</figcaption></figure>
     <div class="detail-introduction"><p>${p.description}</p></div>
     <div class="detail-notes"><section><p class="eyebrow">01 / 출발점</p><h2>어디에서 시작했나요?</h2><p>${p.motif}</p></section><section><p class="eyebrow">02 / 제품과 패키지</p><h2>어떻게 옮겼나요?</h2><p>${p.interpretation}</p></section></div>
-    <div class="detail-gallery">${p.details.map((d,i)=>`<section class="detail-section"><div><p class="eyebrow">${String(i+3).padStart(2,'0')} / 디테일</p><h2>${d.title}</h2><p>${d.text}</p></div><figure>${imageWindow(p,d.crop,d.alt)}<figcaption>${d.alt}</figcaption></figure></section>`).join('')}</div>
+    <div class="detail-gallery">${p.details.map((d,i)=>`<section class="detail-section"><div><p class="eyebrow">${String(i+3).padStart(2,'0')} / 디테일</p><h2>${d.title}</h2><p>${d.text}</p></div><figure>${imageWindow(d.image ? {...p,image:d.image,size:d.size} : p,d.crop,d.alt)}<figcaption>${d.alt}</figcaption></figure></section>`).join('')}</div>
     <aside class="detail-disclaimer"><h2>현재는 기획 시안입니다.</h2><p>이미지는 제품과 패키지의 방향을 설명하기 위한 시안입니다. 실제 구성과 형태는 제작 과정에서 달라질 수 있으며, 출시 여부와 판매 일정은 확정되지 않았습니다.</p></aside>
     <section class="detail-related"><h2>함께 살펴볼 제품</h2><div>${p.related.map(id=>{const item=products.find(q=>q.id===id);return `<button type="button" class="related-product" data-related="${item.id}"><span>${item.name}<small>${item.lead}</small></span><span aria-hidden="true">↗</span></button>`}).join('')}</div></section>`;
   document.querySelectorAll('[data-related]').forEach(button=>button.addEventListener('click',()=>{
