@@ -169,7 +169,7 @@
 .header-inner { grid-template-columns:1fr auto 1fr; gap:24px; }
 .site-header .logo-window { width:38px; }
 .primary-nav { gap:24px; }
-.header-wordmark { justify-self:end; font:500 17px/1.4 var(--body); letter-spacing:-.04em; white-space:nowrap; }
+.header-wordmark { justify-self:end; font:400 18px/1.4 'Noto Serif KR','Batang',serif; letter-spacing:.12em; white-space:nowrap; }
 @media(max-width:760px) {
   .header-inner { grid-template-columns:44px minmax(0,1fr); gap:16px; min-height:74px; padding-block:10px; }
   .site-header .brand-mark { min-width:44px; min-height:48px; }
