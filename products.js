@@ -1,4 +1,4 @@
-// Product concepts and visual observations from the supplied nine original images.
+// Product concepts and visual observations from concept images in the growing BURI collection.
 const products = [
   {
     "id": "giwa-collection",
@@ -368,6 +368,57 @@ const products = [
     ],
     "related": [
       "lotus-giwa",
+      "gonggi-cookie"
+    ]
+  },
+  {
+    "id": "fan-yeot",
+    "name": "부채엿",
+    "en": "KOREAN FAN YEOT",
+    "category": "yeot",
+    "categoryLabel": "YEOT",
+    "image": "assets/fan-yeot.webp",
+    "alt": "꽃과 소나무, 학 문양이 들어간 호박색 부채 모양 엿을 투명 원통형 용기에 담은 패키지와 찻잔 연출",
+    "description": "한국 전통 부채의 곡선과 꽃·소나무·학 문양을 호박색 엿에 담은 막대형 간식 시안입니다. 개별 포장한 부채엿을 원통형 케이스에 담고, 차에 넣어 천천히 즐기는 장면까지 구상했습니다. 실제 사용성은 시제품 제작 후 검증할 예정입니다.",
+    "size": [
+      1122,
+      1402
+    ],
+    "lead": "부채에 담은 우리 그림, 한입의 엿으로.",
+    "motif": "한국 전통 부채의 펼쳐진 형태와 꽃·소나무·학을 그린 장식 문양에서 출발했습니다.",
+    "interpretation": "부채 모양의 투명한 엿에 전통 문양을 넣고 가느다란 막대 손잡이를 더했습니다. 개별 포장해 투명한 원통형 케이스에 담으며, 찻잔에 넣어 즐기는 사용 장면도 기획했습니다. 엿의 강도와 차에서 녹는 특성은 아직 검증 전입니다.",
+    "crop": [
+      0,
+      0,
+      1122,
+      1402
+    ],
+    "details": [
+      {
+        "crop": [
+          100,
+          118,
+          528,
+          531
+        ],
+        "title": "한 손에 들어오는 작은 부채",
+        "text": "펼쳐진 부채의 윤곽 안에 꽃·소나무·학과 같은 장식 모티프를 담아, 간식 하나가 작은 그림처럼 보이도록 기획했습니다.",
+        "alt": "호박색 부채 모양 엿에 그려진 전통 회화 모티프"
+      },
+      {
+        "crop": [
+          585,
+          493,
+          525,
+          605
+        ],
+        "title": "찻잔에서 만나는 부채",
+        "text": "막대형 엿을 따뜻한 차에 넣어 즐기는 장면을 제안한 이미지입니다. 실제 용해 및 식감 특성은 시제품에서 확인해야 합니다.",
+        "alt": "유리 찻잔 속에 담긴 부채 모양 엿의 사용 장면"
+      }
+    ],
+    "related": [
+      "lotus-tea",
       "gonggi-cookie"
     ]
   }

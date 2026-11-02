@@ -185,3 +185,10 @@
   .primary-nav { gap:2px; }
   .primary-nav a { font-size:10px; }
 }
+
+/* The fifth collection filter remains accessible on narrow screens. */
+@media(max-width:760px){
+  .shop-controls{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .shop-controls::-webkit-scrollbar{display:none;}
+  .shop-controls .filter-btn{flex:0 0 auto;min-width:0;padding-inline:9px;}
+}

@@ -2,7 +2,7 @@
 const grid = document.querySelector('#productGrid');
 const dialog = document.querySelector('#productDialog');
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
-const categoryNames = {chocolate:'초콜릿',cookie:'쿠키',tea:'차'};
+const categoryNames = {chocolate:'초콜릿',cookie:'쿠키',tea:'차',yeot:'엿'};
 let currentFilter = 'all';
 let currentPage = '';
 let lastOpener = null;
@@ -77,7 +77,7 @@ function productCard(p, home = false) {
 }
 
 function renderProducts(filter = 'all') {
-  currentFilter = ['chocolate','cookie','tea'].includes(filter) ? filter : 'all';
+  currentFilter = ['chocolate','cookie','tea','yeot'].includes(filter) ? filter : 'all';
   const listed = currentFilter === 'all' ? products : products.filter(p=>p.category===currentFilter);
   document.querySelector('#shopCount').textContent = `${currentFilter==='all'?'전체':categoryNames[currentFilter]} ${listed.length}개`;
   document.querySelectorAll('[data-filter]').forEach(button=>{
