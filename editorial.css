@@ -166,39 +166,45 @@
   .reveal.is-visible,.reveal:focus-within { transform:none; }
 }
 
-/* Compact single-row mobile navigation: logo + four tabs. */
+/* Mobile header: compact optical spacing with balanced labels. */
 @media (max-width:760px) {
   .header-inner {
     display:flex;
     align-items:center;
     min-height:0;
-    gap:10px;
-    padding-top:6px;
-    padding-bottom:6px;
+    gap:12px;
+    padding-top:7px;
+    padding-bottom:7px;
   }
   .site-header .brand-mark {
-    flex:0 0 auto;
-    min-width:32px;
+    flex:0 0 28px;
+    min-width:28px;
     min-height:44px;
   }
-  .site-header .logo-window { width:32px; }
+  .site-header .logo-window { width:28px; }
   .primary-nav {
-    display:grid;
+    display:flex;
     flex:1 1 auto;
+    justify-content:space-between;
+    align-items:center;
     min-width:0;
     grid-column:auto;
-    grid-template-columns:.85fr 1fr 1.4fr 1fr;
-    gap:0;
+    gap:6px;
     padding:0;
-    align-items:center;
   }
   .primary-nav a {
+    flex:0 0 auto;
     min-width:0;
     min-height:44px;
-    font-size:clamp(10px,2.7vw,11px);
+    padding-inline:2px;
+    font-size:clamp(10px,2.85vw,11.5px);
     letter-spacing:0;
     white-space:nowrap;
   }
-  .primary-nav a[aria-current]::after { bottom:0; }
+  .primary-nav a[aria-current]::after {
+    bottom:1px;
+    left:2px;
+    right:2px;
+  }
   .home-cover { padding-top:18px; }
 }
