@@ -1,4 +1,4 @@
-// Product concepts and visual observations from concept images in the growing BURI collection.
+/* Public collection — retired concepts remain recoverable in Git history. */
 const products = [
   {
     "id": "giwa-collection",
@@ -88,7 +88,7 @@ const products = [
     ],
     "related": [
       "giwa-collection",
-      "hanok-cookie"
+      "lotus-giwa"
     ]
   },
   {
@@ -132,46 +132,6 @@ const products = [
     ]
   },
   {
-    "id": "jeonju-moon",
-    "name": "전주의 달",
-    "en": "THE MOON OF JEONJU",
-    "category": "chocolate",
-    "categoryLabel": "CHOCOLATE",
-    "image": "assets/jeonju-moon.webp",
-    "alt": "주황색과 분홍색 용 일러스트 패키지에 초콜릿이 담긴 상품 이미지",
-    "description": "유쾌한 용의 표정과 대담한 색채를 통해 전통의 상징을 친근하게 풀어낸 초콜릿 시안입니다. 패키지 하단의 작은 창을 통해 한 알의 초콜릿을 보여줍니다.",
-    "size": [
-      1374,
-      1145
-    ],
-    "lead": "유쾌한 용의 표정, 한 알을 보여주는 작은 창.",
-    "motif": "전통의 상징인 용을 친근하게 바라보는 데서 출발했습니다.",
-    "interpretation": "용의 표정과 대담한 색채를 길쭉한 패키지에 적용했습니다. 하단에는 초콜릿 한 알을 보여주는 작은 창을 배치했습니다.",
-    "crop": [
-      0,
-      0,
-      1374,
-      1145
-    ],
-    "details": [
-      {
-        "crop": [
-          340,
-          700,
-          870,
-          425
-        ],
-        "title": "작은 창으로 먼저 만나는 한 알",
-        "text": "제품을 모두 드러내지 않고 일부를 보여주는 창이 패키지의 그래픽과 연결됩니다.",
-        "alt": "주황색과 분홍색 패키지 하단의 둥근 창과 초콜릿"
-      }
-    ],
-    "related": [
-      "lotus-giwa",
-      "hanok-pop-up"
-    ]
-  },
-  {
     "id": "hanok-pop-up",
     "name": "한옥 초콜릿",
     "en": "HANOK CHOCOLATE",
@@ -207,48 +167,8 @@ const products = [
       }
     ],
     "related": [
-      "hanok-cookie",
+      "excavation-cookie",
       "giwa-collection"
-    ]
-  },
-  {
-    "id": "hanok-cookie",
-    "name": "기와쿠키",
-    "en": "GIWA COOKIE",
-    "category": "cookie",
-    "categoryLabel": "COOKIE",
-    "image": "assets/hanok-cookie.webp",
-    "alt": "한옥 기와 지붕 형태의 입체 패키지에 담긴 길쭉한 쿠키",
-    "description": "한옥의 지붕과 기둥을 닮은 상자 안에 쿠키를 담은 패키지 시안입니다. 전통 건축을 손에 올려둘 수 있는 작은 먹거리 오브제로 재해석했습니다.",
-    "size": [
-      1312,
-      1199
-    ],
-    "lead": "지붕과 기둥을 닮은 상자에 쿠키를 담습니다.",
-    "motif": "한옥의 지붕과 기둥을 손에 올려둘 수 있는 작은 형태로 바라봤습니다.",
-    "interpretation": "길쭉한 쿠키가 보이는 상자에 기와 지붕과 기둥의 구조를 적용했습니다. 건축의 형태를 패키지로 해석한 시안입니다.",
-    "crop": [
-      0,
-      0,
-      878,
-      890
-    ],
-    "details": [
-      {
-        "crop": [
-          0,
-          0,
-          1312,
-          1199
-        ],
-        "title": "다른 각도에서 보는 패키지",
-        "text": "정면과 측면, 색을 달리한 모습이 담긴 원본 기획 시안입니다. 색상과 실제 제작 사양은 확정 전입니다.",
-        "alt": "기와쿠키 패키지의 정면·측면과 여러 색상 기획 시안"
-      }
-    ],
-    "related": [
-      "hanok-pop-up",
-      "giwa-sleeve"
     ]
   },
   {
@@ -287,48 +207,8 @@ const products = [
       }
     ],
     "related": [
-      "cookie-tower",
-      "hanok-cookie"
-    ]
-  },
-  {
-    "id": "cookie-tower",
-    "name": "쿠키탑",
-    "en": "COOKIE TOWER",
-    "category": "cookie",
-    "categoryLabel": "COOKIE",
-    "image": "assets/cookie-tower.webp",
-    "alt": "투명 돔 안에 슬롯으로 쌓아 만든 쿠키탑과 조립 방법을 보여주는 이미지",
-    "description": "조각을 끼워 탑을 완성하는 조립형 쿠키입니다. 먹기 전 간단히 쌓아 보는 즐거움을 투명 돔 패키지에 담았습니다.",
-    "size": [
-      1536,
-      1024
-    ],
-    "lead": "조각을 끼워 쌓으며 완성하는 작은 탑.",
-    "motif": "먹기 전에 조각을 맞추고 쌓아 보는 놀이를 생각했습니다.",
-    "interpretation": "홈이 있는 쿠키 조각을 서로 끼워 탑을 완성하고, 완성된 형태가 보이도록 투명 돔 패키지를 구상했습니다.",
-    "crop": [
-      0,
-      0,
-      830,
-      1024
-    ],
-    "details": [
-      {
-        "crop": [
-          835,
-          20,
-          690,
-          950
-        ],
-        "title": "맞추고, 끼우고, 쌓는 구조",
-        "text": "시안의 조립 순서는 바닥 놓기 → 몸체 끼우기 → 지붕 끼우기 → 층층이 쌓기입니다. 홈을 이용한 결합 원리를 표현한 기획 이미지이며, 실제 결합 치수와 제작 구조는 검증 전입니다.",
-        "alt": "쿠키탑의 구성 조각, 홈을 이용한 결합 원리, 조립 순서와 쿠키 도안"
-      }
-    ],
-    "related": [
-      "gonggi-cookie",
-      "hanok-cookie"
+      "excavation-cookie",
+      "clay-figurine-cookie"
     ]
   },
   {
@@ -466,8 +346,8 @@ const products = [
       }
     ],
     "related": [
-      "hanok-cookie",
-      "cookie-tower"
+      "excavation-cookie",
+      "gonggi-cookie"
     ]
   },
   {
@@ -569,57 +449,6 @@ const products = [
     ],
     "related": [
       "lotus-giwa",
-      "gonggi-cookie"
-    ]
-  },
-  {
-    "id": "fan-yeot",
-    "name": "부채엿",
-    "en": "KOREAN FAN YEOT",
-    "category": "yeot",
-    "categoryLabel": "YEOT",
-    "image": "assets/fan-yeot.webp",
-    "alt": "꽃과 소나무, 학 문양이 들어간 호박색 부채 모양 엿을 투명 원통형 용기에 담은 패키지와 찻잔 연출",
-    "description": "한국 전통 부채의 곡선과 꽃·소나무·학 문양을 호박색 엿에 담은 막대형 간식 시안입니다. 개별 포장한 부채엿을 원통형 케이스에 담고, 차에 넣어 천천히 즐기는 장면까지 구상했습니다. 실제 사용성은 시제품 제작 후 검증할 예정입니다.",
-    "size": [
-      1122,
-      1402
-    ],
-    "lead": "부채에 담은 우리 그림, 한입의 엿으로.",
-    "motif": "한국 전통 부채의 펼쳐진 형태와 꽃·소나무·학을 그린 장식 문양에서 출발했습니다.",
-    "interpretation": "부채 모양의 투명한 엿에 전통 문양을 넣고 가느다란 막대 손잡이를 더했습니다. 개별 포장해 투명한 원통형 케이스에 담으며, 찻잔에 넣어 즐기는 사용 장면도 기획했습니다. 엿의 강도와 차에서 녹는 특성은 아직 검증 전입니다.",
-    "crop": [
-      0,
-      0,
-      1122,
-      1402
-    ],
-    "details": [
-      {
-        "crop": [
-          100,
-          118,
-          528,
-          531
-        ],
-        "title": "한 손에 들어오는 작은 부채",
-        "text": "펼쳐진 부채의 윤곽 안에 꽃·소나무·학과 같은 장식 모티프를 담아, 간식 하나가 작은 그림처럼 보이도록 기획했습니다.",
-        "alt": "호박색 부채 모양 엿에 그려진 전통 회화 모티프"
-      },
-      {
-        "crop": [
-          585,
-          493,
-          525,
-          605
-        ],
-        "title": "찻잔에서 만나는 부채",
-        "text": "막대형 엿을 따뜻한 차에 넣어 즐기는 장면을 제안한 이미지입니다. 실제 용해 및 식감 특성은 시제품에서 확인해야 합니다.",
-        "alt": "유리 찻잔 속에 담긴 부채 모양 엿의 사용 장면"
-      }
-    ],
-    "related": [
-      "lotus-tea",
       "gonggi-cookie"
     ]
   }
