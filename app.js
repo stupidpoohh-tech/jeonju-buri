@@ -8,6 +8,42 @@ let currentPage = '';
 let lastOpener = null;
 let openProductId = null;
 let revealObserver;
+let logoRun = 0;
+const logoPaths = [...document.querySelectorAll('.logo-trace')];
+const logoTimings = [[0,1100],[900,250],[1100,650],[1650,400],[1950,450],[2300,300],[2550,250]];
+const logoAsset = new Image();
+logoAsset.src = document.querySelector('.brand-drawing image').getAttribute('href');
+// Wait for the original artwork, including on a slow first visit.
+const logoReady = logoAsset.decode().then(()=>true,()=>false);
+function stopBrandLogo() {
+  logoRun++;
+  logoPaths.forEach(path=>path.getAnimations().forEach(animation=>animation.cancel()));
+}
+async function playBrandLogo(explicit = false) {
+  stopBrandLogo();
+  const run = logoRun;
+  if (motionPreference.matches && !explicit) return;
+  const ready = await logoReady;
+  if (!ready || run !== logoRun || currentPage !== 'brand' || document.hidden) return;
+  // Two painted frames keep the first stroke visible after route changes.
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  if (run !== logoRun || currentPage !== 'brand' || document.hidden) return;
+  logoPaths.forEach((path,index)=>{
+    const [delay,duration] = logoTimings[index];
+    path.animate([{strokeDashoffset:100},{strokeDashoffset:0}], {
+      delay:delay+180,duration,easing:'ease-out',fill:'backwards'
+    });
+  });
+}
+document.querySelector('#replayBrandLogo').addEventListener('click',()=>playBrandLogo(true));
+motionPreference.addEventListener('change',()=>{
+  if (motionPreference.matches) stopBrandLogo();
+  else if (currentPage === 'brand') playBrandLogo();
+});
+document.addEventListener('visibilitychange',()=>{
+  if (document.hidden) stopBrandLogo();
+  else if (currentPage === 'brand') playBrandLogo();
+});
 
 function imageWindow(p, crop = p.crop, alt = p.alt, thumb = false) {
   const [x,y,w,h] = crop;
@@ -127,6 +163,10 @@ function route() {
     if(name===page)nav.setAttribute('aria-current','page');else nav.removeAttribute('aria-current');
   }
   currentPage=page;
+  if(changed) {
+    if(page==='brand')playBrandLogo();
+    else stopBrandLogo();
+  }
   if(page==='shop')renderProducts(sub);
   if(changed)window.scrollTo({top:0,behavior:'instant'});
   document.title=`${{home:'전주BURI',brand:'BRAND | 전주BURI',shop:'COLLECTION | 전주BURI',notice:'NOTICE | 전주BURI'}[page]} — 전주의 새로운 주전부리`;
