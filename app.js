@@ -35,7 +35,6 @@ async function playBrandLogo(explicit = false) {
     });
   });
 }
-document.querySelector('#replayBrandLogo').addEventListener('click',()=>playBrandLogo(true));
 motionPreference.addEventListener('change',()=>{
   if (motionPreference.matches) stopBrandLogo();
   else if (currentPage === 'brand') playBrandLogo();
@@ -172,9 +171,125 @@ function route() {
   document.title=`${{home:'전주BURI',brand:'BRAND | 전주BURI',shop:'COLLECTION | 전주BURI',notice:'NOTICE | 전주BURI'}[page]} — 전주의 새로운 주전부리`;
   setupScrollReveal();
   if(requestedProduct)openProduct(requestedProduct);
+  movingWindow.sync();
 }
 window.addEventListener('hashchange',route);
 const selected=['lotus-giwa','gonggi-cookie','giwa-sleeve','lotus-tea'];
 document.querySelector('#homeProductGrid').replaceChildren(...selected.map(id=>productCard(products.find(p=>p.id===id),true)));
 renderProducts();
+const movingWindow = setupMovingWindow();
 route();
+
+function setupMovingWindow() {
+  const exhibition = [
+    {id:'giwa-collection',crop:[0,0,1312,1199]},
+    {id:'lotus-giwa',crop:[0,54,1254,1146]},
+    {id:'gonggi-cookie',crop:[450,170,865,790]},
+    {id:'lotus-tea',crop:[400,0,1120,1024]}
+  ].map(item=>({...item,product:products.find(p=>p.id===item.id)}));
+  const root=document.querySelector('.moving-window');
+  const stage=root.querySelector('.window-stage');
+  const name=root.querySelector('#windowName'), count=root.querySelector('#windowCount');
+  const previous=root.querySelector('#windowPrevious'), next=root.querySelector('#windowNext');
+  const play=root.querySelector('#windowPlay'), status=root.querySelector('#windowStatus');
+  let index=0, timer, busy=false, inView=false, firstReady=false;
+  let paused=motionPreference.matches, request=0, complete=null, suppressClickUntil=0;
+  const images=new Map();
+  const load=i=>{
+    if(!images.has(i)) {
+      const image=new Image();image.src=exhibition[i].product.image;
+      images.set(i,image.decode().then(()=>true,()=>{images.delete(i);return false}));
+    }
+    return images.get(i);
+  };
+  const available=()=>currentPage==='home' && inView && !document.hidden && !dialog.open;
+  const updateControls=()=>{
+    previous.setAttribute('aria-disabled',String(busy));next.setAttribute('aria-disabled',String(busy));
+    play.textContent=paused?'재생':'일시정지';
+    play.setAttribute('aria-label',paused?'쇼윈도 자동 재생':'쇼윈도 자동 재생 일시정지');
+  };
+  const suspend=()=>{
+    request++;
+    if(complete)complete();
+    busy=false;updateControls();
+  };
+  function sync() {
+    clearTimeout(timer);
+    if(!available())suspend();
+    if(available() && !paused && !busy && firstReady)timer=setTimeout(()=>change(1,false),5500);
+  }
+  async function change(direction,manual=true) {
+    if(busy || !available())return;
+    clearTimeout(timer);busy=true;updateControls();
+    const ticket=++request, target=(index+direction+exhibition.length)%exhibition.length;
+    const ready=await load(target);
+    if(ticket!==request)return;
+    if(!ready || !available()) {
+      busy=false;updateControls();
+      if(manual)status.textContent='이미지를 불러오지 못했습니다. 다시 시도해 주세요.';
+      sync();return;
+    }
+    const item=exhibition[target], old=stage.querySelector('.window-slide');
+    const incoming=document.createElement('span');incoming.className='window-slide window-incoming';
+    incoming.setAttribute('aria-hidden','true');incoming.innerHTML=imageWindow(item.product,item.crop);
+    incoming.querySelector('img').loading='eager';
+    const animations=[];
+    complete=()=>{
+      complete=null;
+      index=target;incoming.classList.remove('window-incoming');incoming.removeAttribute('aria-hidden');
+      old.remove();animations.forEach(a=>a.cancel());
+      stage.href=`#shop/product/${item.id}`;stage.setAttribute('aria-label',`${item.product.name} 상세 보기`);
+      name.textContent=item.product.name;count.textContent=`${String(index+1).padStart(2,'0')} / 04`;
+      if(manual)status.textContent=`${item.product.name}, ${index+1} / 4`;
+      busy=false;updateControls();load((index+1)%exhibition.length);sync();
+    };
+    stage.append(incoming);
+    if(motionPreference.matches){complete();return}
+    const options={duration:800,easing:'cubic-bezier(0.76, 0, 0.24, 1)',fill:'forwards'};
+    animations.push(incoming.animate([{transform:'translateX(100%)'},{transform:'translateX(0)'}],options));
+    animations.push(old.animate([{transform:'translateX(0)'},{transform:'translateX(-3%)'}],{...options,delay:80,duration:720}));
+    Promise.all(animations.map(a=>a.finished)).then(()=>{if(ticket===request)complete?.()},()=>{});
+  }
+  previous.addEventListener('click',()=>change(-1));next.addEventListener('click',()=>change(1));
+  play.addEventListener('click',()=>{paused=!paused;updateControls();sync()});
+  stage.addEventListener('click',event=>{
+    if(event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
+    event.preventDefault();
+    if(busy || performance.now()<suppressClickUntil)return;
+    openProduct(exhibition[index].product,stage);sync();
+  });
+  stage.addEventListener('dragstart',event=>event.preventDefault());
+  stage.addEventListener('keydown',event=>{
+    if(event.key==='ArrowLeft' || event.key==='ArrowRight') {
+      event.preventDefault();change(event.key==='ArrowLeft'?-1:1);
+    }
+  });
+  let touch=null;
+  stage.addEventListener('pointerdown',event=>{
+    if(event.pointerType!=='touch' || !event.isPrimary)return;
+    touch={x:event.clientX,y:event.clientY,id:event.pointerId};
+    stage.setPointerCapture(event.pointerId);
+  });
+  stage.addEventListener('pointerup',event=>{
+    if(!touch || event.pointerId!==touch.id)return;
+    const dx=event.clientX-touch.x,dy=event.clientY-touch.y;touch=null;
+    if(Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)*1.4) {
+      suppressClickUntil=performance.now()+500;change(dx<0?1:-1);
+    }
+  });
+  stage.addEventListener('pointercancel',()=>{touch=null});
+  document.addEventListener('visibilitychange',sync);
+  motionPreference.addEventListener('change',()=>{
+    if(motionPreference.matches){paused=true;suspend()}
+    updateControls();sync();
+  });
+  new MutationObserver(sync).observe(dialog,{attributes:true,attributeFilter:['open']});
+  if('IntersectionObserver' in window) {
+    new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;sync()},{threshold:0}).observe(stage);
+  } else inView=true;
+  [previous,next,play].forEach(button=>button.hidden=false);updateControls();
+  stage.querySelector('img').decode().then(()=>{
+    firstReady=true;load(1);sync();
+  },()=>{firstReady=true;sync()});
+  return {sync};
+}

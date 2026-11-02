@@ -8,7 +8,7 @@ HOME · BRAND · COLLECTION · NOTICE
 
 - `index.html`: HOME / BRAND / COLLECTION / NOTICE 및 상품 상세 대화상자
 - `products.js`: 기존 9개 제품 명칭·설명, 기획 관점, 원본 이미지의 표시 영역, 관련 제품
-- `app.js`: 페이지 이동, 필터, 상세 팝업, 포커스 복귀, 스크롤 전환
+- `app.js`: 페이지 이동, 필터, 상세 팝업, 포커스 복귀, 스크롤 전환, HOME 무빙 쇼윈도 및 로고 자동 애니메이션
 - `styles.css`: 공통 글자·색·버튼·반응형 레이아웃
 - `editorial.css`: 사진 중심 히어로, 비대칭 HOME 큐레이션, 상품별 이미지 비율과 모바일 배치
 - `assets/`: 기존 상품 원본 9장과 제공된 로고 원본

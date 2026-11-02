@@ -6,6 +6,19 @@
 .button:hover { background:transparent; color:#686965; }
 .home-cover { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:24px; align-items:end; padding-top:32px; }
 .cover-image { grid-column:1/9; grid-row:1; width:100%; max-width:720px; }
+.window-stage { display:block; position:relative; aspect-ratio:1312/1199; overflow:hidden; touch-action:pan-y pinch-zoom; }
+.window-slide { position:absolute; inset:0; display:block; }
+.window-incoming { z-index:1; }
+.window-slide .image-window { width:100%; height:100%; aspect-ratio:auto; background:transparent; }
+.window-caption { align-items:center; min-height:44px; gap:8px; margin-top:6px; }
+.window-controls { display:flex; align-items:center; flex-shrink:0; }
+.window-controls button { border:0; background:none; padding:0; min-width:44px; min-height:44px; font:400 18px/1 var(--latin),var(--body); }
+.window-controls button[hidden] { display:none; }
+.window-controls button[aria-disabled="true"] { cursor:default; }
+.window-controls button:hover { color:var(--ink); }
+#windowCount { min-width:48px; text-align:center; font:12px/1.5 var(--latin); font-variant-numeric:tabular-nums; }
+#windowPlay { font:12px/1.5 var(--body); min-width:52px; margin-left:4px; }
+.visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 .cover-copy { grid-column:9/-1; grid-row:1; padding:0 0 52px 10px; }
 .cover-copy h1 { font-size:30px; line-height:1.6; letter-spacing:-.05em; margin:18px 0 30px; }
 .cover-copy .eyebrow { font-size:12px; }
@@ -72,9 +85,6 @@
 .brand-intro { display:grid; grid-template-columns:1.45fr .55fr; gap:60px; align-items:center; }
 .brand-signature { justify-self:center; display:grid; justify-items:center; gap:12px; }
 .brand-drawing { display:block; width:148px; max-width:100%; height:auto; }
-#replayBrandLogo { min-height:44px; padding:8px 10px; background:transparent; border:0; font-size:12px; color:var(--muted); }
-#replayBrandLogo:hover { color:var(--ink); text-decoration:underline; text-underline-offset:4px; }
-#replayBrandLogo span { margin-left:6px; font-size:16px; }
 .logo-trace { stroke-dasharray:100; stroke-dashoffset:0; }
 .detail-heading { display:grid; grid-template-columns:1fr auto; gap:0 24px; align-items:baseline; }
 .detail-heading .eyebrow,.detail-heading h1 { grid-column:1; }
