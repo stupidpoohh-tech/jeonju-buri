@@ -10,6 +10,7 @@ HOME · BRAND · COLLECTION · NOTICE
 - `products.js`: 기존 9개 제품 명칭·설명, 기획 관점, 원본 이미지의 표시 영역, 관련 제품
 - `app.js`: 페이지 이동, 필터, 상세 팝업, 포커스 복귀, 스크롤 전환
 - `styles.css`: 공통 글자·색·버튼·반응형 레이아웃
+- `editorial.css`: 사진 중심 히어로, 비대칭 HOME 큐레이션, 상품별 이미지 비율과 모바일 배치
 - `assets/`: 기존 상품 원본 9장과 제공된 로고 원본
 - `DESIGN-NOTES.md`: 디자인 기준, 자료 사용 내역, 추가 제작·확인 목록
 
@@ -31,7 +32,7 @@ HOME · BRAND · COLLECTION · NOTICE
 
 별도 패키지 설치나 빌드 과정 없이 `index.html`을 브라우저에서 열 수 있습니다.
 
-Cloudflare Pages는 GitHub `main` 브랜치에 연결되어 있습니다. 저장소 최상단을 배포하며, 새 파일인 `products.js`를 함께 포함해야 합니다. Framework preset은 None, 출력 디렉터리는 `.`입니다.
+Cloudflare Pages는 GitHub `main` 브랜치에 연결되어 있습니다. 저장소 최상단을 배포하며 `products.js`와 `editorial.css`를 함께 포함해야 합니다. Framework preset은 None, 출력 디렉터리는 `.`입니다.
 
 ## 확인 범위
 

@@ -134,7 +134,7 @@ function route() {
   if(requestedProduct)openProduct(requestedProduct);
 }
 window.addEventListener('hashchange',route);
-const selected=['giwa-sleeve','gonggi-cookie','lotus-giwa','lotus-tea'];
+const selected=['lotus-giwa','gonggi-cookie','giwa-sleeve','lotus-tea'];
 document.querySelector('#homeProductGrid').replaceChildren(...selected.map(id=>productCard(products.find(p=>p.id===id),true)));
 renderProducts();
 route();
