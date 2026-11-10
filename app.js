@@ -3,6 +3,7 @@ const grid = document.querySelector('#productGrid');
 const dialog = document.querySelector('#productDialog');
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const categoryNames = {chocolate:'초콜릿',cookie:'쿠키',tea:'차'};
+let archiveMode = false;
 let currentFilter = 'all';
 let currentPage = '';
 let lastOpener = null;
@@ -78,7 +79,9 @@ function productCard(p, home = false) {
 
 function renderProducts(filter = 'all') {
   currentFilter = ['chocolate','cookie','tea'].includes(filter) ? filter : 'all';
-  const listed = currentFilter === 'all' ? products : products.filter(p=>p.category===currentFilter);
+  const source = archiveMode ? archivedProducts : products;
+  document.querySelectorAll('[data-filter]').forEach(b=>{b.querySelector('span').textContent=String(source.filter(p=>b.dataset.filter==='all'||p.category===b.dataset.filter).length).padStart(2,'0')});
+  const listed = currentFilter === 'all' ? source : source.filter(p=>p.category===currentFilter);
   document.querySelector('#shopCount').textContent = `${currentFilter==='all'?'전체':categoryNames[currentFilter]} ${listed.length}개`;
   document.querySelectorAll('[data-filter]').forEach(button=>{
     const selected = button.dataset.filter === currentFilter;
@@ -158,13 +161,16 @@ document.addEventListener('focusin',event=>{
 
 document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{
   const filter=button.dataset.filter;
-  const hash=filter==='all'?'#shop':`#shop/${filter}`;
+  const base=archiveMode?'#02':'#shop';
+  const hash=filter==='all'?base:`${base}/${filter}`;
   if(location.hash===hash){renderProducts(filter);setupScrollReveal()}else location.hash=hash;
 }));
 
 function route() {
-  const [requested,sub,id]=location.hash.slice(1).split('/');
-  const page=['home','brand','shop','notice'].includes(requested)?requested:'home';
+  const [requested,sub,id]=(location.hash.slice(1) || (/^\/02\/?$/.test(location.pathname)?'02':'')).split('/');
+  archiveMode = requested==='02';
+  document.querySelector('#shop-title').innerHTML=archiveMode?'COLLECTION 002 / 이전 기획 아카이브 <a href="#shop" aria-label="현재 컬렉션">/01</a>':'COLLECTION 001 / 기획 아카이브 <a href="#02" aria-label="이전 기획 아카이브">/02</a>';
+  const page=requested==='02'?'shop':['home','brand','shop','notice'].includes(requested)?requested:'home';
   const changed=page!==currentPage;
   const requestedProduct = page==='shop' && sub==='product' ? products.find(p=>p.id===id) : null;
   if(page==='shop' && ((sub==='product' && !requestedProduct) || (sub && sub!=='product' && !['chocolate','cookie','tea'].includes(sub)))) history.replaceState(null,'','#shop');

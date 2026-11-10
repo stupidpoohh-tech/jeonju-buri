@@ -192,3 +192,6 @@
   .shop-controls::-webkit-scrollbar{display:none;}
   .shop-controls .filter-btn{flex:0 0 auto;min-width:0;padding-inline:9px;}
 }
+
+#shop-title a { margin-left: 14px; color: inherit; text-decoration: none; }
+#shop-title a:hover { text-decoration: underline; }

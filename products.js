@@ -292,3 +292,182 @@ const products = [
     ]
   }
 ];
+
+const archivedProducts = [
+  {
+    "id": "jeonju-moon",
+    "name": "전주의 달",
+    "en": "THE MOON OF JEONJU",
+    "category": "chocolate",
+    "categoryLabel": "CHOCOLATE",
+    "image": "assets/jeonju-moon.webp",
+    "alt": "주황색과 분홍색 용 일러스트 패키지에 초콜릿이 담긴 상품 이미지",
+    "description": "유쾌한 용의 표정과 대담한 색채를 통해 전통의 상징을 친근하게 풀어낸 초콜릿 시안입니다. 패키지 하단의 작은 창을 통해 한 알의 초콜릿을 보여줍니다.",
+    "size": [
+      1374,
+      1145
+    ],
+    "lead": "유쾌한 용의 표정, 한 알을 보여주는 작은 창.",
+    "motif": "전통의 상징인 용을 친근하게 바라보는 데서 출발했습니다.",
+    "interpretation": "용의 표정과 대담한 색채를 길쭉한 패키지에 적용했습니다. 하단에는 초콜릿 한 알을 보여주는 작은 창을 배치했습니다.",
+    "crop": [
+      0,
+      0,
+      1374,
+      1145
+    ],
+    "details": [
+      {
+        "crop": [
+          340,
+          700,
+          870,
+          425
+        ],
+        "title": "작은 창으로 먼저 만나는 한 알",
+        "text": "제품을 모두 드러내지 않고 일부를 보여주는 창이 패키지의 그래픽과 연결됩니다.",
+        "alt": "주황색과 분홍색 패키지 하단의 둥근 창과 초콜릿"
+      }
+    ],
+    "related": [
+      "lotus-giwa",
+      "hanok-pop-up"
+    ]
+  },
+  {
+    "id": "cookie-tower",
+    "name": "쿠키탑",
+    "en": "COOKIE TOWER",
+    "category": "cookie",
+    "categoryLabel": "COOKIE",
+    "image": "assets/cookie-tower.webp",
+    "alt": "투명 돔 안에 슬롯으로 쌓아 만든 쿠키탑과 조립 방법을 보여주는 이미지",
+    "description": "조각을 끼워 탑을 완성하는 조립형 쿠키입니다. 먹기 전 간단히 쌓아 보는 즐거움을 투명 돔 패키지에 담았습니다.",
+    "size": [
+      1536,
+      1024
+    ],
+    "lead": "조각을 끼워 쌓으며 완성하는 작은 탑.",
+    "motif": "먹기 전에 조각을 맞추고 쌓아 보는 놀이를 생각했습니다.",
+    "interpretation": "홈이 있는 쿠키 조각을 서로 끼워 탑을 완성하고, 완성된 형태가 보이도록 투명 돔 패키지를 구상했습니다.",
+    "crop": [
+      0,
+      0,
+      830,
+      1024
+    ],
+    "details": [
+      {
+        "crop": [
+          835,
+          20,
+          690,
+          950
+        ],
+        "title": "맞추고, 끼우고, 쌓는 구조",
+        "text": "시안의 조립 순서는 바닥 놓기 → 몸체 끼우기 → 지붕 끼우기 → 층층이 쌓기입니다. 홈을 이용한 결합 원리를 표현한 기획 이미지이며, 실제 결합 치수와 제작 구조는 검증 전입니다.",
+        "alt": "쿠키탑의 구성 조각, 홈을 이용한 결합 원리, 조립 순서와 쿠키 도안"
+      }
+    ],
+    "related": [
+      "gonggi-cookie",
+      "hanok-cookie"
+    ]
+  },
+  {
+    "id": "incense-cookie",
+    "name": "발굴하는 과자",
+    "category": "cookie",
+    "en": "INCENSE COOKIE",
+    "image": "assets/incense-cookie.png",
+    "size": [
+      1448,
+      1086
+    ],
+    "crop": [
+      0,
+      0,
+      1448,
+      1086
+    ],
+    "alt": "발굴하는 과자 기획 이미지",
+    "lead": "백자 향로의 형태를 쿠키에 담은 발굴 놀이 시안.",
+    "description": "백자 향로의 형태를 쿠키에 담은 발굴 놀이 시안.",
+    "motif": "전통의 형태와 문양에서 출발한 이전 기획입니다.",
+    "interpretation": "백자 향로의 형태를 쿠키에 담은 발굴 놀이 시안.",
+    "details": [],
+    "related": []
+  },
+  {
+    "id": "fan-yeot",
+    "name": "부채엿",
+    "category": "tea",
+    "en": "FAN YEOT",
+    "image": "assets/fan-yeot.png",
+    "size": [
+      1122,
+      1402
+    ],
+    "crop": [
+      0,
+      0,
+      1122,
+      1402
+    ],
+    "alt": "부채엿 기획 이미지",
+    "lead": "부채의 문양과 달콤한 엿을 함께 즐기는 시안.",
+    "description": "부채의 문양과 달콤한 엿을 함께 즐기는 시안.",
+    "motif": "전통의 형태와 문양에서 출발한 이전 기획입니다.",
+    "interpretation": "부채의 문양과 달콤한 엿을 함께 즐기는 시안.",
+    "details": [],
+    "related": []
+  },
+  {
+    "id": "moju-pongdang",
+    "name": "모주퐁당",
+    "category": "chocolate",
+    "en": "MOJU PONGDANG",
+    "image": "assets/moju-pongdang.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "crop": [
+      0,
+      0,
+      1536,
+      1024
+    ],
+    "alt": "모주퐁당 기획 이미지",
+    "lead": "따뜻한 우유에 녹여 즐기는 항아리 초콜릿 시안.",
+    "description": "따뜻한 우유에 녹여 즐기는 항아리 초콜릿 시안.",
+    "motif": "전통의 형태와 문양에서 출발한 이전 기획입니다.",
+    "interpretation": "따뜻한 우유에 녹여 즐기는 항아리 초콜릿 시안.",
+    "details": [],
+    "related": []
+  },
+  {
+    "id": "tiger-cookie",
+    "name": "호랑이 쿠키",
+    "category": "cookie",
+    "en": "TIGER COOKIE",
+    "image": "assets/tiger-cookie.png",
+    "size": [
+      1270,
+      1023
+    ],
+    "crop": [
+      0,
+      0,
+      1270,
+      1023
+    ],
+    "alt": "호랑이 쿠키 기획 이미지",
+    "lead": "호랑이와 오색 구름을 틴 상자에 담은 쿠키 시안.",
+    "description": "호랑이와 오색 구름을 틴 상자에 담은 쿠키 시안.",
+    "motif": "전통의 형태와 문양에서 출발한 이전 기획입니다.",
+    "interpretation": "호랑이와 오색 구름을 틴 상자에 담은 쿠키 시안.",
+    "details": [],
+    "related": []
+  }
+];
