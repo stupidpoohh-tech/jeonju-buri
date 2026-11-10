@@ -300,12 +300,12 @@ const archivedProducts = [
     "en": "THE MOON OF JEONJU",
     "category": "chocolate",
     "categoryLabel": "CHOCOLATE",
-    "image": "assets/jeonju-moon.webp",
+    "image": "assets/jeonju-moon.png",
     "alt": "주황색과 분홍색 용 일러스트 패키지에 초콜릿이 담긴 상품 이미지",
     "description": "유쾌한 용의 표정과 대담한 색채를 통해 전통의 상징을 친근하게 풀어낸 초콜릿 시안입니다. 패키지 하단의 작은 창을 통해 한 알의 초콜릿을 보여줍니다.",
     "size": [
-      1374,
-      1145
+      1455,
+      1081
     ],
     "lead": "유쾌한 용의 표정, 한 알을 보여주는 작은 창.",
     "motif": "전통의 상징인 용을 친근하게 바라보는 데서 출발했습니다.",
@@ -313,16 +313,16 @@ const archivedProducts = [
     "crop": [
       0,
       0,
-      1374,
-      1145
+      1455,
+      1081
     ],
     "details": [
       {
         "crop": [
-          340,
-          700,
-          870,
-          425
+          360,
+          661,
+          921,
+          401
         ],
         "title": "작은 창으로 먼저 만나는 한 알",
         "text": "제품을 모두 드러내지 않고 일부를 보여주는 창이 패키지의 그래픽과 연결됩니다.",
@@ -340,7 +340,7 @@ const archivedProducts = [
     "en": "COOKIE TOWER",
     "category": "cookie",
     "categoryLabel": "COOKIE",
-    "image": "assets/cookie-tower.webp",
+    "image": "assets/cookie-tower.png",
     "alt": "투명 돔 안에 슬롯으로 쌓아 만든 쿠키탑과 조립 방법을 보여주는 이미지",
     "description": "조각을 끼워 탑을 완성하는 조립형 쿠키입니다. 먹기 전 간단히 쌓아 보는 즐거움을 투명 돔 패키지에 담았습니다.",
     "size": [
@@ -467,6 +467,30 @@ const archivedProducts = [
     "description": "호랑이와 오색 구름을 틴 상자에 담은 쿠키 시안.",
     "motif": "전통의 형태와 문양에서 출발한 이전 기획입니다.",
     "interpretation": "호랑이와 오색 구름을 틴 상자에 담은 쿠키 시안.",
+    "details": [],
+    "related": []
+  },
+  {
+    "id": "clay-figurine-cookie",
+    "name": "흙인형쿠키",
+    "en": "CLAY FIGURINE COOKIE",
+    "category": "cookie",
+    "image": "assets/clay-figurine-cookie.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "crop": [
+      0,
+      0,
+      1254,
+      1254
+    ],
+    "alt": "흙인형 얼굴 모양 흑임자 쿠키와 검정·주황 원통 패키지",
+    "lead": "흙인형의 소박한 표정을 흑임자 쿠키로.",
+    "description": "동그란 눈과 입으로 흙인형의 표정을 담은 흑임자 쿠키 기획 시안입니다.",
+    "motif": "흙인형의 투박하고 친근한 얼굴에서 출발했습니다.",
+    "interpretation": "얼굴 모양 쿠키와 전통 문양을 담은 원통 패키지를 함께 구성했습니다.",
     "details": [],
     "related": []
   }
