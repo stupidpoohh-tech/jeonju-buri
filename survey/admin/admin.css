@@ -1,0 +1,81 @@
+/* 설문 관리자 화면 전용 스타일 */
+.ad { --ad-s1: #2a78d6; --ad-s2: #eb6834; --ad-s3: #1baf7a; --ad-bar: #2a78d6; background: #f6f7f8; }
+.ad-top { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--sv-line); }
+.ad-top__inner { max-width: 1120px; margin: 0 auto; padding: .75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.ad-top__title { margin: 0; font-weight: 700; }
+.ad-top__title span { display: block; font-size: .8125rem; font-weight: 500; color: var(--sv-muted); }
+.ad-top__actions { display: flex; gap: .5rem; }
+.ad-tabs { max-width: 1120px; margin: 0 auto; padding: 0 1rem; display: flex; gap: 1.25rem; overflow-x: auto; scrollbar-width: none; }
+.ad-tabs a { flex: none; padding: .55rem 0 .65rem; color: var(--sv-ink-2); text-decoration: none; font-weight: 600; font-size: .9375rem; border-bottom: 2px solid transparent; }
+.ad-tabs a:hover { color: var(--sv-ink); border-color: var(--sv-line-strong); }
+.ad-main { max-width: 1120px; margin: 0 auto; padding: 1.5rem 1rem 4rem; outline: none; }
+.ad-login { max-width: 420px; margin: 2rem auto; }
+.ad-login form { margin-top: 1.25rem; }
+.ad-section { margin: 0 0 2.5rem; scroll-margin-top: 7rem; }
+.ad-section > h2 { margin: 0 0 1rem; font-size: 1.25rem; }
+.ad-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.ad-panel { background: #fff; border: 1px solid var(--sv-line); border-radius: 12px; padding: 1.1rem 1.1rem 1rem; min-width: 0; }
+.ad-panel--wide { grid-column: 1 / -1; }
+.ad-panel h3 { margin: 0 0 .25rem; font-size: 1rem; }
+.ad-panel .ad-sub { margin: 0 0 .9rem; font-size: .8125rem; color: var(--sv-muted); }
+.ad-stats { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 1rem; }
+.ad-stat { background: #fff; border: 1px solid var(--sv-line); border-radius: 12px; padding: 1rem 1.1rem; }
+.ad-stat__label { margin: 0; font-size: .8125rem; color: var(--sv-muted); font-weight: 600; }
+.ad-stat__value { margin: .2rem 0 0; font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.ad-stat__note { margin: .2rem 0 0; font-size: .8125rem; color: var(--sv-muted); }
+.ad-empty { padding: 1rem; color: var(--sv-muted); font-size: .9375rem; }
+
+/* 가로 막대 */
+.ad-bars { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.ad-bar { display: grid; grid-template-columns: minmax(7rem, 40%) 1fr auto; align-items: center; gap: .6rem; font-size: .875rem; padding: 2px 0; border-radius: 4px; }
+.ad-bar:hover { background: var(--sv-subtle); }
+.ad-bar__label { color: var(--sv-ink-2); line-height: 1.35; }
+.ad-bar__track { height: 14px; position: relative; }
+.ad-bar__fill { display: block; height: 100%; background: var(--ad-bar); border-radius: 0 4px 4px 0; }
+.ad-bar__value { font-variant-numeric: tabular-nums; color: var(--sv-ink); font-weight: 600; white-space: nowrap; min-width: 5.5rem; text-align: right; }
+.ad-bar__value small { color: var(--sv-muted); font-weight: 500; }
+
+/* 맛 비교(그룹 막대) */
+.ad-legend { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin: 0 0 .75rem; padding: 0; list-style: none; font-size: .8125rem; color: var(--sv-ink-2); }
+.ad-legend li { display: inline-flex; align-items: center; gap: .35rem; }
+.ad-swatch { width: .75rem; height: .75rem; border-radius: 3px; display: inline-block; }
+.ad-group { padding: .5rem 0; border-top: 1px solid var(--sv-line); }
+.ad-group:first-of-type { border-top: 0; }
+.ad-group__label { margin: 0 0 .3rem; font-size: .875rem; font-weight: 600; }
+.ad-group .ad-bar { grid-template-columns: 3rem 1fr auto; }
+.ad-s-moju { --ad-bar: var(--ad-s1); }
+.ad-s-lotus { --ad-bar: var(--ad-s2); }
+.ad-s-coffee { --ad-bar: var(--ad-s3); }
+.ad-bar + .ad-bar { margin-top: 2px; }
+
+/* 표 */
+.ad-table-wrap { overflow-x: auto; }
+.ad-table { width: 100%; border-collapse: collapse; font-size: .875rem; font-variant-numeric: tabular-nums; }
+.ad-table th, .ad-table td { padding: .55rem .6rem; border-bottom: 1px solid var(--sv-line); text-align: left; vertical-align: top; }
+.ad-table th { font-weight: 650; color: var(--sv-ink-2); background: var(--sv-subtle); white-space: nowrap; }
+.ad-table td.num, .ad-table th.num { text-align: right; }
+.ad-table tbody tr:hover { background: #fafbfc; }
+.ad-flavor-dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; margin-right: .35rem; vertical-align: middle; }
+
+/* 자유의견 */
+.ad-comments { margin: 0; padding: 0; list-style: none; display: grid; gap: .5rem; max-height: 420px; overflow-y: auto; }
+.ad-comments li { padding: .6rem .75rem; border: 1px solid var(--sv-line); border-radius: 8px; font-size: .9rem; white-space: pre-wrap; }
+.ad-comments small { display: block; margin-top: .25rem; color: var(--sv-muted); font-size: .75rem; }
+
+/* 응답자 상세 */
+.ad-detail { margin-top: 1rem; }
+.ad-detail dl { margin: 0; display: grid; grid-template-columns: minmax(10rem, 35%) 1fr; }
+.ad-detail dt, .ad-detail dd { margin: 0; padding: .45rem .5rem; border-bottom: 1px solid var(--sv-line); font-size: .875rem; }
+.ad-detail dt { color: var(--sv-ink-2); font-weight: 600; }
+.ad-detail dd { white-space: pre-wrap; }
+.ad-detail h4 { margin: 1rem 0 .4rem; font-size: .9375rem; }
+.ad-rowbtn { padding: 0; border: 0; background: none; color: var(--sv-accent-ink); text-decoration: underline; cursor: pointer; font: inherit; }
+.ad-download { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.ad-msg { margin: 0 0 1rem; }
+@media (max-width: 560px) {
+  .ad-bar { grid-template-columns: 1fr auto; }
+  .ad-bar__label { grid-column: 1 / -1; }
+  .ad-bar__track { grid-column: 1; }
+  .ad-detail dl { grid-template-columns: 1fr; }
+  .ad-detail dt { border-bottom: 0; padding-bottom: 0; }
+}
