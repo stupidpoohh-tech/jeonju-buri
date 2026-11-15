@@ -203,3 +203,6 @@ body.sv {
 .sv-info__list { margin: 0; display: grid; grid-template-columns: minmax(6.5rem, 35%) 1fr; border-top: 1px solid var(--sv-line); }
 .sv-info__list dt, .sv-info__list dd { margin: 0; padding: .55rem 0; border-bottom: 1px solid var(--sv-line); font-size: .9375rem; }
 .sv-info__list dt { font-weight: 600; color: var(--sv-ink-2); }
+/* 알레르기 주의 */
+.sv-alert--warn { margin-bottom: 1.5rem; border: 2px solid #b45309; background: #fff7ed; color: #6b2f05; }
+.sv-alert__title { font-weight: 700; font-size: 1rem; color: #9a3412; }
