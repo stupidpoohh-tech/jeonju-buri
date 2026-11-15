@@ -16,7 +16,12 @@ export const FLAVORS = [
 
 // 상품 소개(E) 화면의 9구 선물세트 이미지. 확정 이미지를 survey/images/에 넣고 경로를 지정하세요.
 // 비어 있으면 '상품 이미지 등록 예정' 영역만 표시합니다.
-export const PRODUCT_IMAGE = { src: '', alt: '전주BURI 기와 초콜릿 9구 선물세트' };
+export const PRODUCT_IMAGE = {
+  src: '../assets/giwa-sleeve.webp',
+  alt: '긴 상자 안에 기와 곡선을 닮은 초콜릿 9구가 한 줄로 놓이고, 옆에 단청 무늬 슬리브가 있는 기와 초콜릿 선물세트',
+  width: 1086,
+  height: 1448,
+};
 
 // 상품 소개(E) 화면의 제품 정보. 실제 측정값·확정 정보가 정해지면 value에 입력합니다.
 // value가 비어 있는 항목은 응답자 화면에 표시하지 않습니다(임의 수치를 노출하지 않기 위함).

@@ -144,7 +144,7 @@ body.sv {
 
 /* 상품 소개 */
 .sv-product__media { margin: 0 0 1rem; border-radius: 10px; overflow: hidden; background: var(--sv-subtle); }
-.sv-product__media img { display: block; width: 100%; height: auto; }
+.sv-product__media img { display: block; width: 100%; height: auto; max-height: 70vh; object-fit: contain; margin: 0 auto; }
 .sv-product__placeholder { display: grid; place-items: center; aspect-ratio: 4 / 3; padding: 1rem; border: 1px dashed var(--sv-line-strong); border-radius: 10px; color: var(--sv-muted); font-size: .9375rem; text-align: center; }
 .sv-compo { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
 .sv-compo li { padding: .65rem .5rem; border: 1px solid var(--sv-line); border-radius: 10px; text-align: center; font-size: .9375rem; }
