@@ -197,3 +197,9 @@ body.sv {
 @media (forced-colors: active) {
   .sv-opt:has(input:checked), .sv-scale__btn:has(input:checked), .sv-tab[aria-selected="true"] { outline: 3px solid Highlight; }
 }
+/* 제품 정보(E) */
+.sv-info__title { margin: 1rem 0 .5rem; font-size: 1rem; font-weight: 700; }
+.sv-info { margin-top: 1rem; }
+.sv-info__list { margin: 0; display: grid; grid-template-columns: minmax(6.5rem, 35%) 1fr; border-top: 1px solid var(--sv-line); }
+.sv-info__list dt, .sv-info__list dd { margin: 0; padding: .55rem 0; border-bottom: 1px solid var(--sv-line); font-size: .9375rem; }
+.sv-info__list dt { font-weight: 600; color: var(--sv-ink-2); }

@@ -1,6 +1,6 @@
 // 전주BURI 기와 초콜릿 소비자 설문 — 응답 화면
 import {
-  SURVEY_VERSION, STEPS, SECTIONS, FLAVORS, FLAVOR_CONCEPTS, PRODUCT_IMAGE, TEXT_MAX, OTHER_MAX, WTP_MAX,
+  SURVEY_VERSION, STEPS, SECTIONS, FLAVORS, PRODUCT_IMAGE, PRODUCT_INFO, PACKAGE_IMAGE, TEXT_MAX, OTHER_MAX, AMOUNT_MAX, selectLimit,
   QUESTION_BY_ID, isVisible, validateQuestion, validateStep, validateAll, flavorCompletion,
 } from './schema.js';
 
@@ -134,7 +134,7 @@ function renderChoice(q) {
       input, h('span', { class: 'sv-opt__mark', 'aria-hidden': 'true' }), h('span', { class: 'sv-opt__text', text: o.label })));
     if (o.other) { other = otherField(q); list.append(other); }
   });
-  const counter = q.exact ? h('p', { class: 'sv-counter', id: `q-${q.id}-counter`, 'aria-live': 'polite' }) : null;
+  const counter = selectLimit(q) ? h('p', { class: 'sv-counter', id: `q-${q.id}-counter`, 'aria-live': 'polite' }) : null;
   const fs = questionShell(q, list, counter);
   syncChoice(q, fs);
   return fs;
@@ -147,7 +147,8 @@ function onChoice(q, index, checked) {
     if (checked) {
       if (o.exclusive) arr = [o.value];
       else arr = arr.filter((v) => !q.options.find((x) => x.value === v)?.exclusive).concat(arr.includes(o.value) ? [] : [o.value]);
-      if (q.exact && arr.length > q.exact) arr = arr.slice(arr.length - q.exact);
+      const limit = selectLimit(q);
+      if (limit && arr.length > limit) arr = arr.slice(arr.length - limit);
     } else arr = arr.filter((v) => v !== o.value);
     // 화면 순서대로 정렬
     state.answers[q.id] = q.options.map((x) => x.value).filter((v) => arr.includes(v));
@@ -163,19 +164,23 @@ function syncChoice(q, fs) {
   const multi = q.type === 'multi';
   const v = state.answers[q.id];
   const selected = multi ? (v || []) : (v === undefined ? [] : [v]);
+  const limit = selectLimit(q);
   const inputs = fs.querySelectorAll(`input[name="q-${q.id}"]`);
   inputs.forEach((input) => {
     const o = q.options[Number(input.value)];
     input.checked = selected.includes(o.value);
-    if (q.exact) input.disabled = !input.checked && selected.length >= q.exact;
+    if (limit) input.disabled = !input.checked && !o.exclusive && selected.length >= limit;
   });
   const otherWrap = fs.querySelector('.sv-other');
   if (otherWrap) otherWrap.hidden = !selected.includes('other');
   const counter = fs.querySelector('.sv-counter');
   if (counter) {
-    counter.textContent = selected.length >= q.exact
-      ? `${selected.length} / ${q.exact}개 선택 — 다른 항목으로 바꾸려면 선택한 항목을 먼저 해제해 주세요.`
-      : `${selected.length} / ${q.exact}개 선택`;
+    const exclusivePicked = selected.some((x) => q.options.find((o) => o.value === x)?.exclusive);
+    const unit = q.exact ? `${limit}개 선택` : `최대 ${limit}개`;
+    counter.textContent = exclusivePicked ? ''
+      : selected.length >= limit
+        ? `${selected.length}개 선택 (${unit}) — 다른 항목으로 바꾸려면 선택한 항목을 먼저 해제해 주세요.`
+        : `${selected.length}개 선택 (${unit})`;
   }
 }
 
@@ -203,11 +208,9 @@ function renderScale(q) { return questionShell(q, scaleRow(q, q.id)); }
 
 function renderMatrix(q) {
   const rows = q.rows.map((r) => {
-    const concept = FLAVOR_CONCEPTS[r.flavor];
     return h('div', { class: 'sv-matrix__row' },
       h('p', { class: 'sv-matrix__label', id: `q-${r.id}-label`, text: r.label }),
-      concept ? h('p', { class: 'sv-matrix__concept', text: concept }) : null,
-      scaleRow(q, r.id, `${r.label} 콘셉트 적합도`));
+      scaleRow(q, r.id, `${r.label} ${q.short}`));
   });
   return questionShell(q, h('div', { class: 'sv-matrix' }, rows));
 }
@@ -227,55 +230,48 @@ function renderText(q) {
   return questionShell(q, ta, count);
 }
 
-function renderTextGroup(q) {
-  const fields = q.rows.map((r) => {
-    const [ta, count] = textArea(`q-${r.id}-input`, state.answers[r.id], `${r.label} 개선의견`, (v) => { state.answers[r.id] = v; changed(q.id); });
-    return h('div', { class: 'sv-field' }, h('label', { class: 'sv-label', for: `q-${r.id}-input`, text: r.label }), ta, count);
-  });
-  return questionShell(q, fields);
-}
-
-function renderWtp(q) {
+function renderAmount(q) {
   const a = state.answers;
-  const preview = h('p', { class: 'sv-money__preview', id: 'q-wtp-preview', 'aria-live': 'polite' });
-  const input = h('input', { class: 'sv-input sv-money__input', id: 'q-wtp-amount', type: 'text', inputmode: 'numeric',
-    autocomplete: 'off', placeholder: '0', 'aria-label': '최대 지불의향 금액(원)', 'aria-describedby': 'q-wtp-preview' });
+  const id = `q-${q.id}`;
+  const preview = h('p', { class: 'sv-money__preview', id: `${id}-preview`, 'aria-live': 'polite' });
+  const input = h('input', { class: 'sv-input sv-money__input', id: `${id}-amount`, type: 'text', inputmode: 'numeric',
+    autocomplete: 'off', placeholder: '0', 'aria-label': `Q${q.num} 금액(원)`, 'aria-describedby': `${id}-preview` });
   const box = h('div', { class: 'sv-money' }, input, h('span', { class: 'sv-money__unit', 'aria-hidden': 'true', text: '원' }));
-  const none = h('input', { type: 'checkbox', id: 'q-wtp-none', checked: a.wtp_none === true });
-  const noneLabel = h('label', { class: 'sv-opt sv-opt--multi', for: 'q-wtp-none' }, none,
-    h('span', { class: 'sv-opt__mark', 'aria-hidden': 'true' }), h('span', { class: 'sv-opt__text', text: '가격과 관계없이 구매 의향 없음' }));
+  const none = h('input', { type: 'checkbox', id: `${id}-none`, checked: a[q.noneKey] === true });
+  const noneLabel = h('label', { class: 'sv-opt sv-opt--multi', for: `${id}-none` }, none,
+    h('span', { class: 'sv-opt__mark', 'aria-hidden': 'true' }), h('span', { class: 'sv-opt__text', text: q.noneLabel }));
+  const onChange = () => {
+    if (q.id === 'wtp' && state.priceShown) {
+      const now = JSON.stringify([a.wtp_amount ?? null, a.wtp_none === true]);
+      if (now !== state.wtpAtPrice) state.wtpRevised = true;
+    }
+    changed(q.id);
+  };
   const sync = () => {
-    const off = a.wtp_none === true;
+    const off = a[q.noneKey] === true;
     input.disabled = off;
     box.classList.toggle('is-off', off);
-    input.value = !off && Number.isInteger(a.wtp_amount) ? a.wtp_amount.toLocaleString('ko-KR') : '';
-    preview.textContent = !off && a.wtp_amount ? `입력 금액: ${koreanAmount(a.wtp_amount)}` : '';
+    input.value = !off && Number.isInteger(a[q.amountKey]) ? a[q.amountKey].toLocaleString('ko-KR') : '';
+    preview.textContent = !off && a[q.amountKey] ? `입력 금액: ${koreanAmount(a[q.amountKey])}` : '';
   };
   input.addEventListener('input', () => {
     const digits = input.value.replace(/[^0-9]/g, '').replace(/^0+/, '').slice(0, 7);
     const n = digits ? Number(digits) : null;
-    a.wtp_amount = n;
+    a[q.amountKey] = n;
     const caret = input.value.length - input.selectionStart;
     input.value = n ? n.toLocaleString('ko-KR') : '';
     const pos = Math.max(0, input.value.length - caret);
     try { input.setSelectionRange(pos, pos); } catch { /* 일부 입력 타입 */ }
-    preview.textContent = n ? `입력 금액: ${koreanAmount(n)}${n > WTP_MAX ? ` — ${won(WTP_MAX)} 이하로 입력해 주세요` : ''}` : '';
-    wtpChanged();
+    preview.textContent = n ? `입력 금액: ${koreanAmount(n)}${n > AMOUNT_MAX ? ` — ${won(AMOUNT_MAX)} 이하로 입력해 주세요` : ''}` : '';
+    onChange();
   });
-  none.addEventListener('change', () => { a.wtp_none = none.checked; sync(); wtpChanged(); });
+  none.addEventListener('change', () => { a[q.noneKey] = none.checked; sync(); onChange(); });
   sync();
-  const notice = state.priceShown
+  const notice = q.id === 'wtp' && state.priceShown
     ? h('p', { class: 'sv-alert sv-alert--info', text: '판매가격을 안내받기 전에 생각하셨던 금액을 기준으로 응답해 주세요.' }) : null;
   return questionShell(q, notice,
-    h('label', { class: 'sv-label', for: 'q-wtp-amount', text: '금액 직접 입력' }), box, preview,
+    h('label', { class: 'sv-label', for: `${id}-amount`, text: '금액 직접 입력' }), box, preview,
     h('div', { class: 'sv-options' }, noneLabel));
-}
-function wtpChanged() {
-  if (state.priceShown) {
-    const now = JSON.stringify([state.answers.wtp_amount ?? null, state.answers.wtp_none === true]);
-    if (now !== state.wtpAtPrice) state.wtpRevised = true;
-  }
-  changed('wtp');
 }
 
 function renderQuestion(q) {
@@ -284,8 +280,7 @@ function renderQuestion(q) {
     case 'scale': return renderScale(q);
     case 'matrix': return renderMatrix(q);
     case 'text': return renderText(q);
-    case 'textgroup': return renderTextGroup(q);
-    case 'wtp': return renderWtp(q);
+    case 'amount': return renderAmount(q);
     default: return null;
   }
 }
@@ -416,6 +411,7 @@ function stepHead(step) {
 }
 
 function renderProductIntro() {
+  const info = PRODUCT_INFO.filter((i) => typeof i.value === 'string' && i.value.trim());
   const media = PRODUCT_IMAGE.src
     ? h('figure', { class: 'sv-product__media' }, h('img', { src: PRODUCT_IMAGE.src, alt: PRODUCT_IMAGE.alt, loading: 'eager', decoding: 'async' }))
     : h('div', { class: 'sv-product__media' }, h('div', { class: 'sv-product__placeholder', role: 'img', 'aria-label': '기와 초콜릿 9구 상품 이미지 영역(등록 예정)' }, '기와 초콜릿 9구 상품 이미지 등록 예정'));
@@ -424,8 +420,13 @@ function renderProductIntro() {
       h('p', { text: '다음은 전주BURI에서 개발 중인 기와 초콜릿 9구 선물세트의 상품 기획안입니다.' }),
       h('p', { text: '전주 한옥의 기와를 형상화한 초콜릿으로, 모주·연잎·커피 세 가지 맛을 각각 3구씩 구성한 제품입니다.' })),
     media,
-    h('ul', { class: 'sv-compo', 'aria-label': '구성' }, FLAVORS.map((f) => h('li', {}, h('strong', { text: f.name }), h('span', { text: '3구' })))),
+    h('p', { class: 'sv-info__title', text: '제품 구성' }),
+    h('ul', { class: 'sv-compo', 'aria-label': '제품 구성' }, FLAVORS.map((f) => h('li', {}, h('strong', { text: f.name }), h('span', { text: '3구' })))),
     h('p', { class: 'sv-compo-total', text: '총 9구' }),
+    info.length ? h('div', { class: 'sv-info' }, h('h2', { class: 'sv-info__title', text: '제품 정보' }),
+      h('dl', { class: 'sv-info__list' }, info.flatMap((i) => [h('dt', { text: i.label }), h('dd', { text: i.value })]))) : null,
+    PACKAGE_IMAGE.src ? h('figure', { class: 'sv-product__media' }, h('img', { src: PACKAGE_IMAGE.src, alt: PACKAGE_IMAGE.alt, loading: 'lazy', decoding: 'async' })) : null,
+    h('p', { class: 'sv-q__note', style: 'margin:1rem 0 0', text: '※ 본 제품은 개발 중인 시제품으로, 최종 판매 제품의 사양과 디자인은 변경될 수 있습니다.' }),
     h('p', { class: 'sv-lead', text: '실제 전주 여행 중 이 제품을 선물 또는 기념품으로 구매하는 상황을 가정하고 응답해 주세요.' }));
 }
 
@@ -434,7 +435,6 @@ function renderStep(index) {
   const body = [stepHead(step)];
   if (step.intro) body.push(h('div', { class: 'sv-intro-box' }, step.intro.map((t) => h('p', { text: t }))));
   if (step.type === 'product') body.push(renderProductIntro());
-  if (step.id === 'price') body.push(h('p', { class: 'sv-intro-box', text: '기와 초콜릿 9구 선물세트 (모주·연잎·커피 초콜릿 각 3구)' }));
   body.push(h('div', { id: 'sv-error-summary' }));
   if (step.type === 'tasting') body.push(renderTasting(step));
   else body.push(...step.questions.map(renderQuestion));
@@ -494,13 +494,12 @@ function renderIntro() {
     h('div', { class: 'sv-start__body' },
       h('p', { text: '안녕하세요.' }),
       h('p', { text: '본 설문은 전주의 문화적 특징을 담은 초콜릿 신제품의 맛과 상품성을 검토하기 위한 조사입니다.' }),
-      h('p', { text: '시식하는 초콜릿은 개발 중인 시제품이며, 응답 결과는 맛과 제품 구성 개선에 활용됩니다.' }),
-      h('p', { text: '정답은 없으므로 실제 느낀 점을 솔직하게 응답해 주세요.' })),
+      h('p', { text: '시식하는 초콜릿은 개발 중인 시제품이며, 응답 결과는 제품의 맛과 구성, 판매가격 및 상품성 개선을 위한 자료로 활용됩니다.' }),
+      h('p', { text: '본 설문은 특정 연령대에 한정하지 않으며, 다양한 소비자의 의견을 수집합니다. 제품을 구매할 의향이 없거나 맛이 만족스럽지 않더라도 솔직하게 응답해 주세요.' }),
+      h('p', { text: '설문은 익명으로 진행되며, 성명·소속 부서 등 개인 식별정보는 수집하지 않습니다. 응답 결과는 통계 및 제품 개선 목적으로 활용됩니다.' })),
     h('ul', { class: 'sv-facts' },
       h('li', {}, h('b', { text: '시식 제품' }), '모주·연잎·커피 초콜릿 3종'),
-      h('li', {}, h('b', { text: '구성' }), `${STEPS.length}단계, 이전 단계로 돌아가 수정할 수 있습니다.`),
-      h('li', {}, h('b', { text: '익명 응답' }), '이름·연락처 등 개인을 식별할 수 있는 정보는 묻지 않습니다.'),
-      h('li', {}, h('b', { text: '활용 목적' }), '맛과 제품 구성 개선을 위한 자료')),
+      h('li', {}, h('b', { text: '구성' }), `${STEPS.length}단계, 이전 단계로 돌아가 수정할 수 있습니다.`)),
     notices,
     h('div', { class: 'sv-actions' }, actions)));
 }

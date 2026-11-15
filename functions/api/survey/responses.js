@@ -10,10 +10,11 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 // 허용된 키만 남깁니다(알 수 없는 키 차단).
 function allowedKeys() {
-  const keys = new Set(['wtp_amount', 'wtp_none']);
+  const keys = new Set();
   for (const q of ALL_QUESTIONS) {
     if (q.rows) q.rows.forEach((r) => keys.add(r.id));
-    else if (q.type !== 'wtp') keys.add(q.id);
+    else if (q.type === 'amount') { keys.add(q.amountKey); keys.add(q.noneKey); }
+    else keys.add(q.id);
     if (q.options && q.options.some((o) => o.other)) keys.add(`${q.id}_other`);
   }
   return keys;
@@ -67,24 +68,23 @@ export async function onRequestPost({ request, env }) {
 
   const submittedAt = now.toISOString();
   const stmts = [
-    db.prepare(`INSERT INTO survey_responses (id, survey_version, submitted_at, started_at, duration_sec, age_group, jeonju_visit,
-      moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
-      .bind(responseId, SURVEY_VERSION, submittedAt, started, duration, respondent.age_group, respondent.jeonju_visit,
+    db.prepare(`INSERT INTO survey_responses (id, survey_version, submitted_at, started_at, duration_sec, age_group, residence,
+      jeonju_visit, moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .bind(responseId, SURVEY_VERSION, submittedAt, started, duration, respondent.age_group, respondent.residence, respondent.jeonju_visit,
         respondent.moju_experience, respondent.best_taste, respondent.most_unique, respondent.souvenir_fit, prior),
     ...flavors.map((f) => db.prepare(`INSERT INTO survey_flavor_ratings (response_id, flavor, satisfaction, sweetness, aroma,
-      improvements, improvements_other, concept_fit, improvement_comment) VALUES (?,?,?,?,?,?,?,?,?)`)
-      .bind(responseId, f.flavor, f.satisfaction, f.sweetness, f.aroma, JSON.stringify(f.improvements), f.improvements_other,
-        f.concept_fit, f.improvement_comment)),
-    db.prepare(`INSERT INTO survey_purchase_intent (response_id, souv_freq, souv_spend, souv_target, souv_criteria, souv_criteria_other,
-      wtp_amount, wtp_no_intent, wtp_revised_after_price, intent_27900, choice_30000, reason_not, reason_not_other, reason_buy,
-      reason_buy_other, info_needed, info_needed_other, improve_priority, improve_priority_other, hesitation, use_occasion, channel,
+      improvements, improvements_other, concept_fit) VALUES (?,?,?,?,?,?,?,?)`)
+      .bind(responseId, f.flavor, f.satisfaction, f.sweetness, f.aroma, JSON.stringify(f.improvements), f.improvements_other, f.concept_fit)),
+    db.prepare(`INSERT INTO survey_purchase_intent (response_id, souv_freq, souv_spend_amount, souv_spend_unknown, souv_target, souv_criteria,
+      souv_criteria_other, wtp_amount, wtp_no_intent, wtp_revised_after_price, intent_27900, choice_30000, reason_buy, reason_buy_other,
+      reason_not, reason_not_other, info_needed, info_needed_other, improve_priority, improve_priority_other, use_occasion, channel,
       online_intent, final_comment) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-      .bind(responseId, purchase.souv_freq, purchase.souv_spend, JSON.stringify(purchase.souv_target), JSON.stringify(purchase.souv_criteria),
-        purchase.souv_criteria_other, purchase.wtp_amount, purchase.wtp_no_intent ? 1 : 0, revised, purchase.intent_27900,
-        purchase.choice_30000, JSON.stringify(purchase.reason_not), purchase.reason_not_other, JSON.stringify(purchase.reason_buy),
-        purchase.reason_buy_other, JSON.stringify(purchase.info_needed), purchase.info_needed_other, purchase.improve_priority,
-        purchase.improve_priority_other, purchase.hesitation, purchase.use_occasion, purchase.channel, purchase.online_intent,
-        purchase.final_comment),
+      .bind(responseId, purchase.souv_freq, purchase.souv_spend_amount, purchase.souv_spend_unknown === null ? null : purchase.souv_spend_unknown ? 1 : 0,
+        JSON.stringify(purchase.souv_target), JSON.stringify(purchase.souv_criteria), purchase.souv_criteria_other,
+        purchase.wtp_amount, purchase.wtp_no_intent ? 1 : 0, revised, purchase.intent_27900, purchase.choice_30000,
+        JSON.stringify(purchase.reason_buy), purchase.reason_buy_other, JSON.stringify(purchase.reason_not), purchase.reason_not_other,
+        purchase.info_needed, purchase.info_needed_other, purchase.improve_priority, purchase.improve_priority_other,
+        purchase.use_occasion, purchase.channel, purchase.online_intent, purchase.final_comment),
   ];
 
   try {

@@ -4,6 +4,8 @@ import { FLAVORS, QUESTION_BY_ID, FLAVOR_OPTIONS, PROPOSED_PRICE, labelOf, SURVE
 const API = '/api/survey/admin';
 const TOKEN_KEY = 'buriSurvey.adminToken';
 const $ = (s, r = document) => r.querySelector(s);
+const qn = (id) => `Q${QUESTION_BY_ID[id].num}`;
+const flavorQs = (key) => FLAVORS.map((f) => qn(`${f.id}_${key}`)).join('·');
 
 const ss = {
   get() { try { return sessionStorage.getItem(TOKEN_KEY); } catch { return null; } },
@@ -176,9 +178,10 @@ function overview() {
       stat('동일 기기 재참여 응답', `${repeat}건`, '같은 브라우저에서 이전 제출 기록이 있는 응답')),
     h('div', { class: 'ad-grid' },
       panel('응답 일자별 추이', '한국 시간 기준 제출 일자', barList(Object.keys(days).sort().map((d) => ({ label: d, count: days[d] })), n, { unit: '건' })),
-      panel('연령대 분포', 'Q1', barList(countSingle('age', (r) => r.age_group), n)),
-      panel('전주 방문 경험 분포', 'Q2', barList(countSingle('visit', (r) => r.jeonju_visit), n)),
-      panel('모주 음용 경험', 'Q3', barList(countSingle('moju_exp', (r) => r.moju_experience), n))));
+      panel('연령대 분포', qn('age'), barList(countSingle('age', (r) => r.age_group), n)),
+      panel('거주지역 분포', qn('residence'), barList(countSingle('residence', (r) => r.residence), n)),
+      panel('전주 방문 경험 분포', qn('visit'), barList(countSingle('visit', (r) => r.jeonju_visit), n)),
+      panel('모주 음용 경험', qn('moju_exp'), barList(countSingle('moju_exp', (r) => r.moju_experience), n))));
 }
 function stat(label, value, note) {
   return h('div', { class: 'ad-stat' }, h('p', { class: 'ad-stat__label', text: label }), h('p', { class: 'ad-stat__value', text: value }), note ? h('p', { class: 'ad-stat__note', text: note }) : null);
@@ -203,17 +206,17 @@ function flavorSection() {
     h('h2', { id: 'fl-t', text: 'B. 맛별 평가 결과' }),
     h('div', { class: 'ad-grid' },
       h('div', { class: 'ad-panel ad-panel--wide' }, h('h3', { text: '맛 3종 비교 요약' }),
-        h('p', { class: 'ad-sub', text: '만족도·콘셉트 적합도: 1~5점 평균. 단맛·향: 1(지나치게 약함)~5(지나치게 강함) 평균, 3이 ‘적당함’.' }),
-        tableEl(['맛', '응답', '평균 만족도', '만족(4~5점)', '단맛 평균', '단맛 적당함', '향·풍미 평균', '향·풍미 적당함', '콘셉트 적합도'], rows, [1, 2, 3, 4, 5, 6, 7, 8])),
-      panel('만족도 분포', 'Q4·Q8·Q12', flavorGroups(FLAVOR_OPTIONS.satisfaction.map((o) => ({ ...o, label: `${o.value}점 ${o.label}` })), (x, v) => x.satisfaction === v)),
-      panel('단맛 평가 분포', 'Q5·Q9·Q13', flavorGroups(FLAVOR_OPTIONS.sweetness, (x, v) => x.sweetness === v)),
-      panel('향·풍미 평가 분포', 'Q6·Q10·Q14', flavorGroups(FLAVOR_OPTIONS.aroma, (x, v) => x.aroma === v)),
-      panel('콘셉트 적합도 분포', 'Q18', flavorGroups(FLAVOR_OPTIONS.concept_fit.map((o) => ({ ...o, label: `${o.value}점 ${o.label}` })), (x, v) => x.concept_fit === v)),
-      h('div', { class: 'ad-panel ad-panel--wide' }, h('h3', { text: '맛별 개선 요구' }), h('p', { class: 'ad-sub', text: 'Q7·Q11·Q15 복수 선택, 비율은 전체 응답자 대비' }),
+        h('p', { class: 'ad-sub', text: '만족도·제품명 기대 적합도: 1~5점 평균. 단맛·향: 1(지나치게 약함)~5(지나치게 강함) 평균, 3이 ‘적당함’.' }),
+        tableEl(['맛', '응답', '평균 만족도', '만족(4~5점)', '단맛 평균', '단맛 적당함', '향·풍미 평균', '향·풍미 적당함', '제품명 기대 적합도'], rows, [1, 2, 3, 4, 5, 6, 7, 8])),
+      panel('만족도 분포', flavorQs('satisfaction'), flavorGroups(FLAVOR_OPTIONS.satisfaction.map((o) => ({ ...o, label: `${o.value}점 ${o.label}` })), (x, v) => x.satisfaction === v)),
+      panel('단맛 평가 분포', flavorQs('sweetness'), flavorGroups(FLAVOR_OPTIONS.sweetness, (x, v) => x.sweetness === v)),
+      panel('향·풍미 평가 분포', flavorQs('aroma'), flavorGroups(FLAVOR_OPTIONS.aroma, (x, v) => x.aroma === v)),
+      panel('제품명 기대 적합도 분포', qn('concept_fit'), flavorGroups(FLAVOR_OPTIONS.concept_fit.map((o) => ({ ...o, label: `${o.value}점 ${o.label}` })), (x, v) => x.concept_fit === v)),
+      h('div', { class: 'ad-panel ad-panel--wide' }, h('h3', { text: '맛별 개선 요구' }), h('p', { class: 'ad-sub', text: `${flavorQs('improve')} 복수 선택, 비율은 전체 응답자 대비` }),
         tableEl(['개선 요소', ...FLAVORS.map((f) => f.name)], improveRows, [1, 2, 3])),
-      panel('가장 맛있는 초콜릿', 'Q16', choice('best_taste', 'best_taste')),
-      panel('가장 독특한 초콜릿', 'Q17', choice('most_unique', 'most_unique')),
-      panel('전주 기념품으로 적합한 맛', 'Q19', choice('souvenir_fit', 'souvenir_fit'))));
+      panel('가장 맛있는 초콜릿', qn('best_taste'), choice('best_taste', 'best_taste')),
+      panel('가장 독특한 초콜릿', qn('most_unique'), choice('most_unique', 'most_unique')),
+      panel('전주 기념품으로 적합한 맛', qn('souvenir_fit'), choice('souvenir_fit', 'souvenir_fit'))));
 }
 
 function purchaseSection() {
@@ -227,6 +230,12 @@ function purchaseSection() {
     [30000, 35000, '30,000~34,999원'], [35000, 40000, '35,000~39,999원'], [40000, Infinity, '40,000원 이상']]
     .map(([a, b, label]) => ({ label, count: amounts.filter((x) => x >= a && x < b).length }));
   buckets.push({ label: '가격과 관계없이 구매 의향 없음', count: noIntent });
+  const spends = data.map((r) => P(r).souv_spend_amount).filter((x) => Number.isInteger(x));
+  const spendBase = data.filter((r) => P(r).souv_freq && P(r).souv_freq !== 'none').length;
+  const spendBuckets = [[0, 10000, '10,000원 미만'], [10000, 20000, '10,000~19,999원'], [20000, 25000, '20,000~24,999원'],
+    [25000, 30000, '25,000~29,999원'], [30000, 40000, '30,000~39,999원'], [40000, Infinity, '40,000원 이상']]
+    .map(([a, b, label]) => ({ label, count: spends.filter((x) => x >= a && x < b).length }));
+  spendBuckets.push({ label: '금액이 기억나지 않음', count: data.filter((r) => P(r).souv_spend_unknown === true).length });
   const atOrAbove = amounts.filter((x) => x >= PROPOSED_PRICE).length;
   const notBuri = data.filter((r) => P(r).choice_30000 && P(r).choice_30000 !== 'buri');
   const buri = data.filter((r) => P(r).choice_30000 === 'buri');
@@ -238,23 +247,22 @@ function purchaseSection() {
       stat('최대 지불의향 중앙값', median(amounts) == null ? '–' : won(median(amounts)), `금액 입력 ${amounts.length}명 기준 · 평균 ${mean(amounts) == null ? '–' : won(mean(amounts))}`),
       stat(`${PROPOSED_PRICE.toLocaleString('ko-KR')}원 이상 지불의향`, pct(atOrAbove, n), `${atOrAbove}명 / 전체 ${n}명`),
       stat('가격 무관 구매 의향 없음', `${noIntent}명`, pct(noIntent, n)),
-      stat('가격 안내 후 Q25 수정', `${revised}명`, '지불의향 분석 시 확인 필요')),
+      stat(`가격 공개 후 ${qn('wtp')} 수정`, `${revised}명`, '지불의향 분석 시 확인 필요')),
     h('div', { class: 'ad-grid' },
-      panel('최대 지불의향 금액 분포', 'Q25', barList(buckets, n)),
-      panel(`${PROPOSED_PRICE.toLocaleString('ko-KR')}원 구매의향`, 'Q26', sp('intent_27900')),
-      panel('예산 30,000원 선택(경쟁상품 대비)', 'Q27', sp('choice_30000')),
-      panel('비선택 이유', `Q28 · 해당 응답자 ${notBuri.length}명 기준`, notBuri.length ? mp('reason_not', notBuri) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
-      panel('선택 이유', `Q29 · 해당 응답자 ${buri.length}명 기준`, buri.length ? mp('reason_buy', buri) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
-      panel('구매 전 확인하고 싶은 정보', 'Q30', mp('info_needed')),
-      panel('우선 개선 요소', 'Q31', sp('improve_priority')),
-      panel('구매 저해 조건', 'Q32', sp('hesitation')),
-      panel('적합한 구매 상황', 'Q33', sp('use_occasion')),
-      panel('판매채널 선호도', 'Q34', sp('channel')),
-      panel('여행 후 온라인 구매의향', 'Q35', sp('online_intent')),
-      panel('최근 1년 기념품 구매 횟수', 'Q21', sp('souv_freq')),
-      panel('최근 기념품 결제금액', 'Q22', sp('souv_spend')),
-      panel('기념품 구매 대상', 'Q23 복수 선택', mp('souv_target')),
-      panel('기념품 구매 시 중요 요소', 'Q24 2개 선택', mp('souv_criteria'))));
+      panel('최대 지불의향 금액 분포', qn('wtp'), barList(buckets, n)),
+      panel(`${PROPOSED_PRICE.toLocaleString('ko-KR')}원 구매의향`, qn('intent_27900'), sp('intent_27900')),
+      panel('예산 30,000원 선택(경쟁상품 대비)', qn('choice_30000'), sp('choice_30000')),
+      panel('선택 이유 (전주BURI 선택자)', `${qn('reason_buy')}① · 최대 2개 · 해당 응답자 ${buri.length}명 기준`, buri.length ? mp('reason_buy', buri) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
+      panel('비선택 이유 (그 외 선택자)', `${qn('reason_not')}② · 최대 2개 · 해당 응답자 ${notBuri.length}명 기준`, notBuri.length ? mp('reason_not', notBuri) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
+      panel('구매 전 가장 먼저 확인하고 싶은 정보', qn('info_needed'), sp('info_needed')),
+      panel('우선 개선 요소', qn('improve_priority'), sp('improve_priority')),
+      panel('적합한 구매 상황', qn('use_occasion'), sp('use_occasion')),
+      panel('판매채널 선호도', qn('channel'), sp('channel')),
+      panel('여행 후 온라인 구매의향', qn('online_intent'), sp('online_intent')),
+      panel('최근 1년 기념품 구매 횟수', qn('souv_freq'), sp('souv_freq')),
+      panel('최근 기념품 결제금액', `${qn('souv_spend')} · 구매 경험자 ${spendBase}명 기준 · 중앙값 ${median(spends) == null ? '–' : won(median(spends))}`, barList(spendBuckets, spendBase)),
+      panel('기념품 구매 대상', `${qn('souv_target')} 복수 선택`, mp('souv_target')),
+      panel('기념품 구매 시 중요 요소', `${qn('souv_criteria')} 2개 선택`, mp('souv_criteria'))));
 }
 
 function commentList(items) {
@@ -267,14 +275,13 @@ function commentSection() {
   data.forEach((r) => {
     FLAVORS.forEach((f) => { const x = r.flavors[f.id]; if (x?.improvements_other) others.push({ text: `[${f.name} 개선 요소 기타] ${x.improvements_other}`, meta: meta(r) }); });
     const p = r.purchase || {};
-    [['souv_criteria_other', 'Q24'], ['reason_not_other', 'Q28'], ['reason_buy_other', 'Q29'], ['info_needed_other', 'Q30'], ['improve_priority_other', 'Q31']]
+    [['souv_criteria_other', qn('souv_criteria')], ['reason_buy_other', `${qn('reason_buy')}①`], ['reason_not_other', `${qn('reason_not')}②`], ['info_needed_other', qn('info_needed')], ['improve_priority_other', qn('improve_priority')]]
       .forEach(([k, q]) => { if (p[k]) others.push({ text: `[${q} 기타] ${p[k]}`, meta: meta(r) }); });
   });
   return h('section', { class: 'ad-section', id: 'comments', 'aria-labelledby': 'co-t' },
     h('h2', { id: 'co-t', text: 'D. 자유의견' }),
     h('div', { class: 'ad-grid' },
-      ...FLAVORS.map((f) => panel(`${f.name} 개선의견`, 'Q20', commentList(data.filter((r) => r.flavors[f.id]?.improvement_comment).map((r) => ({ text: r.flavors[f.id].improvement_comment, meta: meta(r) }))))),
-      panel('최종 구매 판단 의견', 'Q36', commentList(data.filter((r) => r.purchase?.final_comment).map((r) => ({ text: r.purchase.final_comment, meta: meta(r) })))),
+      panel('최종 구매 판단 의견', qn('final_comment'), commentList(data.filter((r) => r.purchase?.final_comment).map((r) => ({ text: r.purchase.final_comment, meta: meta(r) })))),
       panel('기타 입력 내용', '선택지의 ‘기타’ 직접 입력', commentList(others))));
 }
 
@@ -282,14 +289,14 @@ function respondentSection() {
   const detail = h('div', { class: 'ad-detail', id: 'ad-detail', tabindex: '-1' });
   const rows = [...data].reverse().map((r) => [
     h('button', { type: 'button', class: 'ad-rowbtn', onclick: () => showDetail(r, detail) }, r.id.slice(0, 8)),
-    kst(r.submitted_at), labelOf('age', r.age_group), labelOf('visit', r.jeonju_visit), labelOf('moju_exp', r.moju_experience),
+    kst(r.submitted_at), labelOf('age', r.age_group), labelOf('residence', r.residence), labelOf('visit', r.jeonju_visit), labelOf('moju_exp', r.moju_experience),
     ...FLAVORS.map((f) => String(r.flavors[f.id]?.satisfaction ?? '–')),
     r.purchase?.wtp_no_intent ? '의향 없음' : r.purchase?.wtp_amount != null ? won(r.purchase.wtp_amount) : '–',
     labelOf('intent_27900', r.purchase?.intent_27900)]);
   return h('section', { class: 'ad-section', id: 'respondents', 'aria-labelledby': 're-t' },
     h('h2', { id: 're-t', text: '응답자별 원문 조회' }),
     h('div', { class: 'ad-panel' }, h('p', { class: 'ad-sub', text: '응답 번호를 누르면 전체 응답을 볼 수 있습니다. 최근 제출 순.' }),
-      tableEl(['응답 번호', '제출 일시', '연령대', '전주 방문', '모주 경험', '모주 만족', '연잎 만족', '커피 만족', '최대 지불의향', '27,900원 구매의향'], rows, [5, 6, 7, 8]),
+      tableEl(['응답 번호', '제출 일시', '연령대', '거주지역', '전주 방문', '모주 경험', '모주 만족', '연잎 만족', '커피 만족', '최대 지불의향', '27,900원 구매의향'], rows, [6, 7, 8, 9]),
       detail));
 }
 
@@ -304,30 +311,31 @@ function showDetail(r, box) {
       ['단맛', labelOf(`${f.id}_sweetness`, x.sweetness)],
       ['향·풍미', labelOf(`${f.id}_aroma`, x.aroma)],
       ['개선 요소', list(`${f.id}_improve`, x.improvements, x.improvements_other)],
-      ['콘셉트 적합도', x.concept_fit != null ? `${x.concept_fit}점` : null],
-      ['개선의견', x.improvement_comment]])];
+      ['제품명 기대 적합도', x.concept_fit != null ? `${x.concept_fit}점` : null]])];
   });
   box.replaceChildren(h('h3', { text: `응답 ${r.id}` }),
     h('h4', { text: '응답자 정보' }),
     pairs([['제출 일시', kst(r.submitted_at)], ['소요시간', durationText(r.duration_sec)], ['설문 버전', r.survey_version],
-      ['동일 기기 이전 제출', `${r.device_prior_submissions}회`], ['Q1 연령대', labelOf('age', r.age_group)],
-      ['Q2 전주 방문 경험', labelOf('visit', r.jeonju_visit)], ['Q3 모주 음용 경험', labelOf('moju_exp', r.moju_experience)]]),
+      ['동일 기기 이전 제출', `${r.device_prior_submissions}회`], [`${qn('age')} 연령대`, labelOf('age', r.age_group)],
+      [`${qn('residence')} 거주지역`, labelOf('residence', r.residence)],
+      [`${qn('visit')} 전주 방문 경험`, labelOf('visit', r.jeonju_visit)], [`${qn('moju_exp')} 모주 음용 경험`, labelOf('moju_exp', r.moju_experience)]]),
     ...fl.flat(),
     h('h4', { text: '비교 평가' }),
-    pairs([['Q16 가장 맛있는 초콜릿', labelOf('best_taste', r.best_taste)], ['Q17 가장 독특한 초콜릿', labelOf('most_unique', r.most_unique)],
-      ['Q19 기념품 적합 맛', labelOf('souvenir_fit', r.souvenir_fit)]]),
-    h('h4', { text: '구매의향' }),
-    pairs([['Q21 구매 횟수', labelOf('souv_freq', p.souv_freq)], ['Q22 결제금액', labelOf('souv_spend', p.souv_spend)],
-      ['Q23 구매 대상', list('souv_target', p.souv_target)], ['Q24 중요 요소', list('souv_criteria', p.souv_criteria, p.souv_criteria_other)],
-      ['Q25 최대 지불의향', p.wtp_no_intent ? '가격과 관계없이 구매 의향 없음' : p.wtp_amount != null ? won(p.wtp_amount) : null],
-      ['Q25 가격 안내 후 수정', p.wtp_revised_after_price ? '예' : '아니오'],
-      ['Q26 27,900원 구매의향', labelOf('intent_27900', p.intent_27900)], ['Q27 예산 30,000원 선택', labelOf('choice_30000', p.choice_30000)],
-      ['Q28 비선택 이유', list('reason_not', p.reason_not, p.reason_not_other)], ['Q29 선택 이유', list('reason_buy', p.reason_buy, p.reason_buy_other)],
-      ['Q30 확인하고 싶은 정보', list('info_needed', p.info_needed, p.info_needed_other)],
-      ['Q31 우선 개선 요소', labelOf('improve_priority', p.improve_priority) + (p.improve_priority_other ? ` (기타: ${p.improve_priority_other})` : '')],
-      ['Q32 구매 저해 조건', labelOf('hesitation', p.hesitation)], ['Q33 구매 상황', labelOf('use_occasion', p.use_occasion)],
-      ['Q34 판매채널', labelOf('channel', p.channel)], ['Q35 온라인 구매의향', labelOf('online_intent', p.online_intent)],
-      ['Q36 최종 의견', p.final_comment]]));
+    pairs([[`${qn('best_taste')} 가장 맛있는 초콜릿`, labelOf('best_taste', r.best_taste)], [`${qn('most_unique')} 가장 독특한 초콜릿`, labelOf('most_unique', r.most_unique)],
+      [`${qn('souvenir_fit')} 기념품 적합 맛`, labelOf('souvenir_fit', r.souvenir_fit)]]),
+    h('h4', { text: '구매 경험 · 구매의향' }),
+    pairs([[`${qn('souv_freq')} 구매 횟수`, labelOf('souv_freq', p.souv_freq)],
+      [`${qn('souv_spend')} 결제금액`, p.souv_spend_unknown ? '구매했으나 금액이 기억나지 않음' : p.souv_spend_amount != null ? won(p.souv_spend_amount) : '해당 없음'],
+      [`${qn('souv_target')} 구매 대상`, list('souv_target', p.souv_target)], [`${qn('souv_criteria')} 중요 요소`, list('souv_criteria', p.souv_criteria, p.souv_criteria_other)],
+      [`${qn('wtp')} 최대 지불의향`, p.wtp_no_intent ? '가격과 관계없이 구매 의향 없음' : p.wtp_amount != null ? won(p.wtp_amount) : null],
+      [`${qn('wtp')} 가격 공개 후 수정`, p.wtp_revised_after_price ? '예' : '아니오'],
+      [`${qn('intent_27900')} 27,900원 구매의향`, labelOf('intent_27900', p.intent_27900)], [`${qn('choice_30000')} 예산 30,000원 선택`, labelOf('choice_30000', p.choice_30000)],
+      [`${qn('reason_buy')}① 선택 이유`, list('reason_buy', p.reason_buy, p.reason_buy_other)], [`${qn('reason_not')}② 비선택 이유`, list('reason_not', p.reason_not, p.reason_not_other)],
+      [`${qn('info_needed')} 먼저 확인하고 싶은 정보`, labelOf('info_needed', p.info_needed) + (p.info_needed_other ? ` (기타: ${p.info_needed_other})` : '')],
+      [`${qn('improve_priority')} 우선 개선 요소`, labelOf('improve_priority', p.improve_priority) + (p.improve_priority_other ? ` (기타: ${p.improve_priority_other})` : '')],
+      [`${qn('use_occasion')} 구매 상황`, labelOf('use_occasion', p.use_occasion)],
+      [`${qn('channel')} 판매채널`, labelOf('channel', p.channel)], [`${qn('online_intent')} 온라인 구매의향`, labelOf('online_intent', p.online_intent)],
+      [`${qn('final_comment')} 최종 의견`, p.final_comment]]));
   box.focus();
 }
 
