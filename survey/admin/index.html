@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <meta name="robots" content="noindex, nofollow">
+ <meta name="referrer" content="no-referrer">
+ <title>설문 결과 관리 — 전주BURI 기와 초콜릿</title>
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+ <link rel="stylesheet" href="../survey.css?v=2026-11-v1">
+ <link rel="stylesheet" href="./admin.css?v=2026-11-v1">
+ <script type="module" src="./admin.js?v=2026-11-v1"></script>
+</head>
+<body class="sv ad">
+ <header class="ad-top">
+  <div class="ad-top__inner">
+   <p class="ad-top__title">설문 결과 관리 <span>전주BURI 기와 초콜릿 소비자 조사</span></p>
+   <div class="ad-top__actions" id="ad-actions" hidden>
+    <button type="button" class="sv-btn sv-btn--ghost sv-btn--small" id="ad-refresh">새로고침</button>
+    <button type="button" class="sv-btn sv-btn--ghost sv-btn--small" id="ad-logout">로그아웃</button>
+   </div>
+  </div>
+  <nav class="ad-tabs" id="ad-nav" aria-label="관리 메뉴" hidden>
+   <a href="#overview">설문 현황</a><a href="#flavors">맛별 평가</a><a href="#purchase">구매의향</a><a href="#comments">자유의견</a><a href="#respondents">응답자별</a><a href="#download">다운로드</a>
+  </nav>
+ </header>
+ <main class="ad-main" id="ad-main" tabindex="-1">
+  <section class="ad-login" id="ad-login" aria-labelledby="ad-login-title">
+   <h1 class="sv-h1" id="ad-login-title">관리자 인증</h1>
+   <p class="sv-lead">설문 결과는 관리자 비밀번호로 인증한 뒤에만 조회할 수 있습니다.</p>
+   <form id="ad-login-form" class="sv-card" novalidate>
+    <label class="sv-label" for="ad-password">관리자 비밀번호</label>
+    <input class="sv-input" type="password" id="ad-password" autocomplete="current-password" required>
+    <p class="sv-q__error" id="ad-login-error" role="alert"></p>
+    <button type="submit" class="sv-btn sv-btn--primary sv-btn--block" id="ad-login-btn" style="margin-top:1rem">확인</button>
+   </form>
+  </section>
+  <div id="ad-dashboard" hidden></div>
+ </main>
+</body>
+</html>
