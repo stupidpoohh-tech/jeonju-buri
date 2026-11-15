@@ -413,7 +413,7 @@ function stepHead(step) {
 function renderProductIntro() {
   const info = PRODUCT_INFO.filter((i) => typeof i.value === 'string' && i.value.trim());
   const media = PRODUCT_IMAGE.src
-    ? h('figure', { class: 'sv-product__media' }, h('img', { src: PRODUCT_IMAGE.src, alt: PRODUCT_IMAGE.alt, loading: 'eager', decoding: 'async' }))
+    ? h('figure', { class: 'sv-product__media' }, h('img', { src: PRODUCT_IMAGE.src, alt: PRODUCT_IMAGE.alt, width: PRODUCT_IMAGE.width, height: PRODUCT_IMAGE.height, loading: 'eager', decoding: 'async' }))
     : h('div', { class: 'sv-product__media' }, h('div', { class: 'sv-product__placeholder', role: 'img', 'aria-label': '기와 초콜릿 9구 상품 이미지 영역(등록 예정)' }, '기와 초콜릿 9구 상품 이미지 등록 예정'));
   return h('div', { class: 'sv-card sv-product' },
     h('div', { class: 'sv-lead', style: 'margin:0 0 1rem' },
