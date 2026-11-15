@@ -125,6 +125,8 @@ export function respondentsCsv(responses) {
   };
 
   singleCol('age', (r) => r.age_group);
+  singleCol('occupation', (r) => r.occupation);
+  add(`Q${q('occupation').num} ${q('occupation').short}: 기타 내용 [occupation_other]`, (r) => r.occupation_other);
   singleCol('residence', (r) => r.residence);
   singleCol('visit', (r) => r.jeonju_visit);
   singleCol('moju_exp', (r) => r.moju_experience);
@@ -175,7 +177,7 @@ export function respondentsCsv(responses) {
 
 // 맛별 평가 1행(롱) CSV: 응답자 × 맛
 export function flavorsCsv(responses) {
-  const header = ['응답ID [response_id]', '제출일시 KST [submitted_at]', '연령대 [age_group]', '거주지역 [residence]', '모주 음용 경험 [moju_experience]',
+  const header = ['응답ID [response_id]', '제출일시 KST [submitted_at]', '연령대 [age_group]', '직업 [occupation]', '거주지역 [residence]', '모주 음용 경험 [moju_experience]',
     '맛 [flavor]', '맛 이름 [flavor_name]', '만족도(1-5) [satisfaction]', '단맛(1-5) [sweetness]', '단맛 응답 [sweetness_label]',
     '향·풍미(1-5) [aroma]', '향·풍미 응답 [aroma_label]',
     ...FLAVOR_OPTIONS.improvements.map((o) => `개선: ${o.label} [improve__${o.value}]`),
@@ -185,7 +187,7 @@ export function flavorsCsv(responses) {
     for (const f of FLAVORS) {
       const x = r.flavors[f.id];
       if (!x) continue;
-      rows.push([r.id, kstString(r.submitted_at), labelOf('age', r.age_group), labelOf('residence', r.residence), labelOf('moju_exp', r.moju_experience),
+      rows.push([r.id, kstString(r.submitted_at), labelOf('age', r.age_group), labelOf('occupation', r.occupation), labelOf('residence', r.residence), labelOf('moju_exp', r.moju_experience),
         f.id, flavorName(f.id), x.satisfaction, x.sweetness, optLabel(FLAVOR_OPTIONS.sweetness, x.sweetness),
         x.aroma, optLabel(FLAVOR_OPTIONS.aroma, x.aroma),
         ...FLAVOR_OPTIONS.improvements.map((o) => (x.improvements.includes(o.value) ? 1 : 0)),
