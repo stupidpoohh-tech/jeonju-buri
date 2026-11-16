@@ -297,7 +297,13 @@ export const QUESTIONS_EN = {
       other_domestic: 'Elsewhere in Korea', overseas: 'Outside Korea',
     },
   },
+  nationality: {
+    title: 'Which country are you from?', short: 'Country (nationality)', placeholder: 'Select a country',
+    note: 'Please choose your nationality.',
+    options: { ...countryOptionsEn, other: 'Other (not listed)' },
+  },
   residence_country: {
+    num: '4-2',
     title: 'Which country do you currently live in?', short: 'Country of residence',
     note: 'Please choose the country where you live now, not your nationality.', placeholder: 'Select a country',
     options: { ...countryOptionsEn, other: 'Other (not listed)' },
@@ -305,7 +311,6 @@ export const QUESTIONS_EN = {
   visit: {
     title: 'Which of the following best describes your experience visiting Jeonju?', short: 'Jeonju visits',
     options: {
-      visiting_now: 'I am visiting Jeonju as a tourist right now.',
       within_1y: 'I visited Jeonju as a tourist within the past year.',
       within_3y: 'I visited Jeonju as a tourist between 1 and 3 years ago.',
       over_3y: 'I last visited Jeonju more than 3 years ago.',
@@ -457,6 +462,7 @@ const clone = (x) => JSON.parse(JSON.stringify(x));
 function applyEn(q, en, byId) {
   if (!en) return q;
   const out = { ...q };
+  if (en.num) out.num = en.num;
   if (en.title) out.title = en.title;
   if (en.short) out.short = en.short;
   out.hint = en.hint || (q.hint ? null : q.hint);
@@ -474,7 +480,7 @@ function applyEn(q, en, byId) {
 // 표시 언어에 맞춘 단계·문항 목록. 문항 ID·선택지 코드·조건은 원본과 같습니다.
 export function localize(lang) {
   if (lang !== 'en') {
-    const steps = STEPS;
+    const steps = STEPS.map((s) => ({ ...s, questions: s.questions.filter((q) => !q.langs || q.langs.includes('ko')) }));
     return { lang: 'ko', steps, byId: Object.fromEntries(steps.flatMap((s) => s.questions).map((q) => [q.id, q])), sections: SECTIONS, ui: UI.ko,
       productInfo: PRODUCT_INFO.map((i) => ({ label: i.label, value: i.value })), flavorName: (f) => f.name };
   }
@@ -483,7 +489,7 @@ export function localize(lang) {
     ...s,
     title: SECTIONS_EN[s.section],
     intro: s.intro ? STEP_INTRO_EN[s.id] : s.intro,
-    questions: s.questions.map((q) => {
+    questions: s.questions.filter((q) => !q.langs || q.langs.includes('en')).map((q) => {
       if (q.flavor) {
         const f = FLAVORS.find((x) => x.id === q.flavor);
         const key = q.id.slice(f.id.length + 1);

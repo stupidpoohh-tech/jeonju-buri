@@ -146,6 +146,9 @@ export function respondentsCsv(responses) {
   add(`Q${q('residence_country').num} 거주국가 코드 [residence_country]`, (r) => r.residence_country);
   add(`Q${q('residence_country').num} 거주국가 [residence_country_name]`, (r) => (r.residence_country ? COUNTRY_NAMES[r.residence_country]?.ko ?? (r.residence_country === 'other' ? '기타' : r.residence_country) : ''));
   add(`Q${q('residence_country').num} 거주국가 기타 내용 [residence_country_other]`, (r) => r.residence_country_other);
+  add('국적(영어 설문) 코드 [nationality]', (r) => r.nationality);
+  add('국적(영어 설문) [nationality_name]', (r) => (r.nationality ? COUNTRY_NAMES[r.nationality]?.ko ?? (r.nationality === 'other' ? '기타' : r.nationality) : ''));
+  add('국적(영어 설문) 기타 내용 [nationality_other]', (r) => r.nationality_other);
   singleCol('visit', (r) => r.jeonju_visit);
   singleCol('moju_exp', (r) => r.moju_experience);
 
@@ -196,7 +199,7 @@ export function respondentsCsv(responses) {
 
 // 맛별 평가 1행(롱) CSV: 응답자 × 맛
 export function flavorsCsv(responses) {
-  const header = ['응답ID [response_id]', '제출일시 KST [submitted_at]', '응답 언어 [survey_language]', '조사 경로 [survey_source]', '거주국가 [residence_country]', '연령대 [age_group]', '성별 [gender]', '직업 [occupation]', '거주지역 [residence]', '모주 음용 경험 [moju_experience]',
+  const header = ['응답ID [response_id]', '제출일시 KST [submitted_at]', '응답 언어 [survey_language]', '조사 경로 [survey_source]', '거주국가 [residence_country]', '국적(영어 설문) [nationality]', '연령대 [age_group]', '성별 [gender]', '직업 [occupation]', '거주지역 [residence]', '모주 음용 경험 [moju_experience]',
     '맛 [flavor]', '맛 이름 [flavor_name]', '만족도(1-5) [satisfaction]', '단맛(1-5) [sweetness]', '단맛 응답 [sweetness_label]',
     '향·풍미(1-5) [aroma]', '향·풍미 응답 [aroma_label]',
     ...FLAVOR_OPTIONS.improvements.map((o) => `개선: ${o.label} [improve__${o.value}]`),
@@ -206,7 +209,7 @@ export function flavorsCsv(responses) {
     for (const f of FLAVORS) {
       const x = r.flavors[f.id];
       if (!x) continue;
-      rows.push([r.id, kstString(r.submitted_at), r.survey_language, r.survey_source, r.residence_country, labelOf('age', r.age_group), labelOf('gender', r.gender), labelOf('occupation', r.occupation), labelOf('residence', r.residence), labelOf('moju_exp', r.moju_experience),
+      rows.push([r.id, kstString(r.submitted_at), r.survey_language, r.survey_source, r.residence_country, r.nationality, labelOf('age', r.age_group), labelOf('gender', r.gender), labelOf('occupation', r.occupation), labelOf('residence', r.residence), labelOf('moju_exp', r.moju_experience),
         f.id, flavorName(f.id), x.satisfaction, x.sweetness, optLabel(FLAVOR_OPTIONS.sweetness, x.sweetness),
         x.aroma, optLabel(FLAVOR_OPTIONS.aroma, x.aroma),
         ...FLAVOR_OPTIONS.improvements.map((o) => (x.improvements.includes(o.value) ? 1 : 0)),

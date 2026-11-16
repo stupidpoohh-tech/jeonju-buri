@@ -50,7 +50,9 @@ export async function onRequestPost({ request, env }) {
     else clean[k] = v;
   }
 
-  const errors = validateAll(clean);
+  // 언어별 문항: 국적(nationality)은 영어 설문에서만 받습니다.
+  if (lang !== 'en') { delete clean.nationality; delete clean.nationality_other; }
+  const errors = validateAll(clean, lang);
   if (Object.keys(errors).length) return json({ error: 'validation', message: '응답하지 않았거나 올바르지 않은 문항이 있습니다.', errors }, 422);
 
   const { respondent, flavors, purchase } = normalizeAnswers(clean);
@@ -73,10 +75,11 @@ export async function onRequestPost({ request, env }) {
   const submittedAt = now.toISOString();
   const stmts = [
     db.prepare(`INSERT INTO survey_responses (id, survey_version, prototype_version, survey_language, survey_source, submitted_at, started_at,
-      duration_sec, age_group, gender, occupation, occupation_other, residence, residence_country, residence_country_other, jeonju_visit,
-      moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      duration_sec, age_group, gender, occupation, occupation_other, residence, residence_country, residence_country_other, nationality,
+      nationality_other, jeonju_visit, moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
       .bind(responseId, SURVEY_VERSION, PROTOTYPE_VERSION, lang, source, submittedAt, started, duration, respondent.age_group, respondent.gender,
         respondent.occupation, respondent.occupation_other, respondent.residence, respondent.residence_country, respondent.residence_country_other,
+        respondent.nationality, respondent.nationality_other,
         respondent.jeonju_visit,
         respondent.moju_experience, respondent.best_taste, respondent.most_unique, JSON.stringify(respondent.souvenir_fit), prior),
     ...flavors.map((f) => db.prepare(`INSERT INTO survey_flavor_ratings (response_id, flavor, satisfaction, sweetness, aroma,

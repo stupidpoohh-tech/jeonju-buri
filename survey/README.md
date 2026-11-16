@@ -72,5 +72,6 @@
 - Q29의 비교 상품 이미지는 `survey/images/competitor-chocopie.webp`입니다.
 - `wtp_revised_after_price`: F 영역(가격 공개) 이후 이전 단계로 돌아가 Q27을 수정한 경우 1.
 - 응답 언어(`survey_language`)·조사 경로(`survey_source`)·거주국가(`residence_country`, ISO 3166-1 alpha-2, 국내 거주는 KR)·시제품 버전(`prototype_version`)은 v5에서 추가되었습니다. v5 이전 응답은 관리자 화면·CSV에서 언어 ko, 경로 general로 읽고 `meta_recorded`=0으로 구분합니다.
+- 영어 설문에만 국적 문항(Q4-1, `nationality`, ISO 코드)이 있습니다. 영어 설문에서는 해외 거주국가가 Q4-2로 표시되고, 한국어 설문에서는 Q4-1입니다(같은 `residence_country`). 현장 방문 여부는 QR 조사 경로(`source=hanok`)로 구분합니다.
 - Q27(최대 지불의향)은 가격 공개 이후 수정할 수 없도록 잠급니다(최초 응답 보존).
 - `device_prior_submissions`: 같은 브라우저에서 이전에 제출한 횟수(재참여 구분용, 차단하지 않음).

@@ -129,12 +129,16 @@ export const STEPS = [
       { id: 'residence', num: 4, type: 'single', required: true, short: '거주지역', title: '현재 거주지역은 어디입니까?',
         options: [opt('jeonju', '전주시'), opt('jeonbuk_other', '전북특별자치도 내 다른 지역'), opt('capital', '수도권(서울·경기·인천)'),
           opt('other_domestic', '그 외 국내 지역'), opt('overseas', '해외')] },
+      // 영어 설문에서만 묻는 국적(출신 국가). 거주국가와 별개입니다.
+      { id: 'nationality', num: '4-1', type: 'select', required: true, langs: ['en'], short: '국적(영어 설문)',
+        title: '어느 나라에서 오셨습니까? (국적)', placeholder: '국가 선택',
+        options: [opt('KR', '대한민국'), ...COUNTRIES.map(([c, ko]) => opt(c, ko)), OTHER('기타(목록에 없음)')] },
       { id: 'residence_country', num: '4-1', type: 'select', required: true, short: '거주국가',
         title: '현재 거주하고 있는 국가를 선택해 주세요.', note: '국적이 아닌 현재 거주 국가를 기준으로 선택해 주세요.',
         placeholder: '국가 선택', showIf: { id: 'residence', in: ['overseas'] },
         options: [...COUNTRIES.map(([c, ko]) => opt(c, ko)), OTHER('기타(목록에 없음)')] },
       { id: 'visit', num: 5, type: 'single', required: true, short: '전주 방문 경험', title: '전주 방문 경험에 해당하는 항목을 선택해 주세요.',
-        options: [opt('visiting_now', '현재 전주를 관광 목적으로 방문 중'), opt('within_1y', '최근 1년 이내 관광 목적으로 방문'), opt('within_3y', '1년 초과~3년 이내 관광 목적으로 방문'),
+        options: [opt('within_1y', '최근 1년 이내 관광 목적으로 방문'), opt('within_3y', '1년 초과~3년 이내 관광 목적으로 방문'),
           opt('over_3y', '3년 이전에 방문'), opt('never', '방문 경험 없음'), opt('resident', '현재 전주 거주자')] },
       { id: 'moju_exp', num: 6, type: 'single', required: true, short: '모주 음용 경험', title: '전주의 전통 음료인 모주를 마셔본 경험이 있습니까?',
         options: [opt('yes', '있음'), opt('no', '없음'), opt('unsure', '잘 모르겠음')] },
@@ -351,6 +355,7 @@ export const VALIDATION_MSG = {
 // 문항 하나를 검증하고 오류 메시지(없으면 null)를 돌려줍니다.
 // q는 표시 언어로 바꾼 문항이어도 됩니다(ID·선택지 코드는 동일).
 export function validateQuestion(q, answers, lang = 'ko') {
+  if (q.langs && !q.langs.includes(lang)) return null; // 특정 언어 설문에서만 묻는 문항
   if (!isVisible(q, answers)) return null;
   const M = VALIDATION_MSG[lang] || VALIDATION_MSG.ko;
   const v = answers[q.id];
@@ -451,6 +456,8 @@ export function normalizeAnswers(answers) {
     // 국내 거주 응답은 KR, 해외 거주 응답은 선택한 국가 코드(목록에 없으면 'other' + 직접 입력)
     residence_country: answers.residence && answers.residence !== 'overseas' ? 'KR' : single('residence_country'),
     residence_country_other: otherFor('residence_country'),
+    nationality: single('nationality'),
+    nationality_other: otherFor('nationality'),
     jeonju_visit: single('visit'),
     moju_experience: single('moju_exp'),
     best_taste: single('best_taste'),

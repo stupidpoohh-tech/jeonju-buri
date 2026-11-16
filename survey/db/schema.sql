@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   residence                TEXT NOT NULL,             -- Q4
   residence_country        TEXT,                      -- Q4-1 거주국가 ISO 3166-1 alpha-2(국내 거주는 KR, 목록 외는 other) (v5에서 추가)
   residence_country_other  TEXT,                      -- Q4-1 목록에 없는 국가 직접 입력
+  nationality              TEXT,                      -- 국적(영어 설문에서만 질문, ISO 3166-1 alpha-2, 목록 외는 other) (v5에서 추가)
+  nationality_other        TEXT,                      -- 국적 목록에 없는 국가 직접 입력
   jeonju_visit             TEXT NOT NULL,             -- Q5
   moju_experience          TEXT NOT NULL,             -- Q6
   best_taste               TEXT NOT NULL,             -- Q19

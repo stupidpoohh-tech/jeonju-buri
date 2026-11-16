@@ -266,6 +266,7 @@ function overview() {
       panel('응답 언어', 'v5 이전 응답은 한국어로 집계', barList(Object.entries(LANG_LABEL).map(([k, v]) => ({ label: v, count: data.filter((r) => r.survey_language === k).length })), n)),
       panel('조사 경로', 'QR 배포 경로(응답자의 위치·국적이 아님) · v5 이전 응답은 일반 접속으로 집계', barList(Object.entries(SOURCE_LABEL).map(([k, v]) => ({ label: v, count: data.filter((r) => r.survey_source === k).length })), n)),
       panel('거주국가 분포', `${qn('residence')}·${qn('residence_country')} · 국내 거주는 대한민국`, barList([...new Set(data.map((r) => r.residence_country || ''))].map((c) => ({ label: countryLabel(c), count: data.filter((r) => (r.residence_country || '') === c).length })).sort((a, b) => b.count - a.count), n)),
+      panel('국적(영어 설문)', `영어 설문 응답자 ${data.filter((r) => r.survey_language === 'en').length}명 기준`, (() => { const en = data.filter((r) => r.survey_language === 'en'); return en.length ? barList([...new Set(en.map((r) => r.nationality || ''))].map((c) => ({ label: countryLabel(c), count: en.filter((r) => (r.nationality || '') === c).length })).sort((a, b) => b.count - a.count), en.length) : h('p', { class: 'ad-empty', text: '영어 설문 응답 없음' }); })()),
       panel('연령대 분포', qn('age'), barList(countSingle('age', (r) => r.age_group), n)),
       panel('성별 분포', `${qn('gender')} · 성별 문항 추가 이전 응답은 집계 제외`, barList(countSingle('gender', (r) => r.gender), data.filter((r) => r.gender).length)),
       panel('직업 분포', `${qn('occupation')} · v3 이전 응답은 집계 제외`, barList(countSingle('occupation', (r) => r.occupation), data.filter((r) => r.occupation).length)),
@@ -368,7 +369,7 @@ function commentSection() {
   data.forEach((r) => {
     FLAVORS.forEach((f) => { const x = r.flavors[f.id]; if (x?.improvements_other) others.push({ text: `[${f.name} 개선 요소 기타] ${x.improvements_other}`, meta: meta(r) }); });
     const p = r.purchase || {};
-    [['occupation_other', qn('occupation')], ['souv_criteria_other', qn('souv_criteria')], ['reason_buy_other', `${qn('reason_buy')}①`], ['reason_not_other', `${qn('reason_not')}②`], ['info_needed_other', qn('info_needed')], ['improve_priority_other', qn('improve_priority')]]
+    [['nationality_other', '국적'], ['occupation_other', qn('occupation')], ['souv_criteria_other', qn('souv_criteria')], ['reason_buy_other', `${qn('reason_buy')}①`], ['reason_not_other', `${qn('reason_not')}②`], ['info_needed_other', qn('info_needed')], ['improve_priority_other', qn('improve_priority')]]
       .forEach(([k, q]) => { const v = p[k] ?? r[k]; if (v) others.push({ text: `[${q} 기타] ${v}`, meta: meta(r) }); });
   });
   return h('section', { class: 'ad-section', id: 'comments', 'aria-labelledby': 'co-t' },
@@ -412,6 +413,7 @@ function showDetail(r, box) {
       ['응답 언어', `${LANG_LABEL[r.survey_language] || r.survey_language}${r.meta_recorded ? '' : ' (v5 이전 응답, 추정)'}`],
       ['조사 경로', `${SOURCE_LABEL[r.survey_source] || r.survey_source}${r.meta_recorded ? '' : ' (v5 이전 응답, 미기록)'}`],
       ['시제품 버전', r.prototype_version || '미기록'],
+      ['국적(영어 설문)', r.survey_language === 'en' ? countryLabel(r.nationality) + (r.nationality_other ? ` (기타: ${r.nationality_other})` : '') : '해당 없음(한국어 설문)'],
       [`${qn('residence_country')} 거주국가`, countryLabel(r.residence_country) + (r.residence_country_other ? ` (기타: ${r.residence_country_other})` : '')],
       ['동일 기기 이전 제출', `${r.device_prior_submissions}회`], [`${qn('age')} 연령대`, labelOf('age', r.age_group)],
       [`${qn('gender')} 성별`, r.gender ? labelOf('gender', r.gender) : '–'],
