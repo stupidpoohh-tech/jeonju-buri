@@ -2,38 +2,64 @@
 // 브라우저(설문·관리자 화면)와 Cloudflare Pages Functions(서버 검증·CSV)가 같은 모듈을 사용합니다.
 // 내부 저장에는 고정 문항 ID(id)를 사용하고, 화면 표시 번호(num)는 별도로 관리합니다.
 
-export const SURVEY_VERSION = '2026-11-v4';
+export const SURVEY_VERSION = '2026-11-v5';
+// 시식에 사용하는 시제품의 버전. 레시피·구성이 바뀌면 값을 바꿔 응답을 구분합니다.
+export const PROTOTYPE_VERSION = 'proto-1';
+export const LANGS = ['ko', 'en'];
+// QR코드 배포 경로(운영용 값). 응답자의 실제 위치나 국적을 뜻하지 않습니다.
+export const SOURCES = ['office', 'hanok', 'general'];
+export const normalizeLang = (v) => (LANGS.includes(v) ? v : 'ko');
+export const normalizeSource = (v) => (SOURCES.includes(v) ? v : 'general');
 export const PROPOSED_PRICE = 27900;
 export const AMOUNT_MAX = 1000000;
 export const TEXT_MAX = 1000;
 export const OTHER_MAX = 200;
 
 export const FLAVORS = [
-  { id: 'moju', name: '모주 초콜릿', short: '모주' },
-  { id: 'lotus', name: '연잎 초콜릿', short: '연잎' },
-  { id: 'coffee', name: '커피 초콜릿', short: '커피' },
+  { id: 'moju', name: '모주 초콜릿', short: '모주', en: 'Moju Chocolate', enShort: 'Moju' },
+  { id: 'lotus', name: '연잎 초콜릿', short: '연잎', en: 'Lotus Leaf Chocolate', enShort: 'Lotus Leaf' },
+  { id: 'coffee', name: '커피 초콜릿', short: '커피', en: 'Coffee Chocolate', enShort: 'Coffee' },
 ];
 
 // 상품 소개(E) 화면의 9구 선물세트 이미지. 확정 이미지를 survey/images/에 넣고 경로를 지정하세요.
 // 비어 있으면 '상품 이미지 등록 예정' 영역만 표시합니다.
 export const PRODUCT_IMAGE = {
-  src: '../assets/giwa-sleeve.webp',
+  src: '/assets/giwa-sleeve.webp',
   alt: '긴 상자 안에 기와 곡선을 닮은 초콜릿 9구가 한 줄로 놓이고, 옆에 단청 무늬 슬리브가 있는 기와 초콜릿 선물세트',
   width: 1086,
   height: 1448,
 };
 
 // 상품 소개(E) 화면의 제품 정보. 실제 측정값·확정 정보가 정해지면 value에 입력합니다.
-// value가 비어 있는 항목은 응답자 화면에 표시하지 않습니다(임의 수치를 노출하지 않기 위함).
+// value(한국어)·valueEn(영어)이 비어 있는 항목은 해당 언어 화면에 표시하지 않습니다(임의 수치를 노출하지 않기 위함).
 export const PRODUCT_INFO = [
-  { label: '초콜릿 1구 크기', value: '' },
-  { label: '총중량', value: '' },
-  { label: '패키지', value: '' },
-  { label: '보관방법', value: '' },
-  { label: '유통기한', value: '' },
+  { label: '초콜릿 1구 크기', value: '', valueEn: '' },
+  { label: '총중량', value: '', valueEn: '' },
+  { label: '패키지', value: '', valueEn: '' },
+  { label: '보관방법', value: '', valueEn: '' },
+  { label: '유통기한', value: '', valueEn: '' },
 ];
 // 패키지 시안 또는 시제품 사진(선택). 경로를 입력하면 제품 정보 아래에 표시합니다.
 export const PACKAGE_IMAGE = { src: '', alt: '기와 초콜릿 9구 패키지' };
+
+// 설문 시작 화면의 시식 제품 안내(한국어·영어). 확인된 정보만 입력합니다.
+// ingredients가 비어 있으면 주요 원재료 줄은 표시하지 않습니다.
+export const PRODUCT_NOTICE = {
+  ingredients: { ko: '', en: '' },
+};
+
+// 거주국가(ISO 3166-1 alpha-2). 해외 거주자에게만 묻습니다. 국내 거주 응답은 KR로 저장합니다.
+export const COUNTRIES = [
+  ['US', '미국', 'United States'], ['CA', '캐나다', 'Canada'], ['MX', '멕시코', 'Mexico'], ['BR', '브라질', 'Brazil'],
+  ['GB', '영국', 'United Kingdom'], ['IE', '아일랜드', 'Ireland'], ['FR', '프랑스', 'France'], ['DE', '독일', 'Germany'],
+  ['IT', '이탈리아', 'Italy'], ['ES', '스페인', 'Spain'], ['NL', '네덜란드', 'Netherlands'], ['BE', '벨기에', 'Belgium'],
+  ['CH', '스위스', 'Switzerland'], ['SE', '스웨덴', 'Sweden'], ['PL', '폴란드', 'Poland'], ['RU', '러시아', 'Russia'],
+  ['AU', '호주', 'Australia'], ['NZ', '뉴질랜드', 'New Zealand'], ['JP', '일본', 'Japan'], ['CN', '중국', 'China'],
+  ['TW', '대만', 'Taiwan'], ['HK', '홍콩', 'Hong Kong'], ['SG', '싱가포르', 'Singapore'], ['MY', '말레이시아', 'Malaysia'],
+  ['TH', '태국', 'Thailand'], ['VN', '베트남', 'Vietnam'], ['PH', '필리핀', 'Philippines'], ['ID', '인도네시아', 'Indonesia'],
+  ['IN', '인도', 'India'], ['MN', '몽골', 'Mongolia'],
+];
+export const COUNTRY_NAMES = Object.fromEntries([['KR', '대한민국', 'South Korea'], ...COUNTRIES].map(([c, ko, en]) => [c, { ko, en }]));
 
 const opt = (value, label, extra = {}) => ({ value, label, ...extra });
 const OTHER = (label = '기타') => opt('other', label, { other: true });
@@ -103,6 +129,14 @@ export const STEPS = [
       { id: 'residence', num: 4, type: 'single', required: true, short: '거주지역', title: '현재 거주지역은 어디입니까?',
         options: [opt('jeonju', '전주시'), opt('jeonbuk_other', '전북특별자치도 내 다른 지역'), opt('capital', '수도권(서울·경기·인천)'),
           opt('other_domestic', '그 외 국내 지역'), opt('overseas', '해외')] },
+      // 영어 설문에서만 묻는 국적(출신 국가). 거주국가와 별개입니다.
+      { id: 'nationality', num: '4-1', type: 'select', required: true, langs: ['en'], short: '국적(영어 설문)',
+        title: '어느 나라에서 오셨습니까? (국적)', placeholder: '국가 선택',
+        options: [opt('KR', '대한민국'), ...COUNTRIES.map(([c, ko]) => opt(c, ko)), OTHER('기타(목록에 없음)')] },
+      { id: 'residence_country', num: '4-1', type: 'select', required: true, short: '거주국가',
+        title: '현재 거주하고 있는 국가를 선택해 주세요.', note: '국적이 아닌 현재 거주 국가를 기준으로 선택해 주세요.',
+        placeholder: '국가 선택', showIf: { id: 'residence', in: ['overseas'] },
+        options: [...COUNTRIES.map(([c, ko]) => opt(c, ko)), OTHER('기타(목록에 없음)')] },
       { id: 'visit', num: 5, type: 'single', required: true, short: '전주 방문 경험', title: '전주 방문 경험에 해당하는 항목을 선택해 주세요.',
         options: [opt('within_1y', '최근 1년 이내 관광 목적으로 방문'), opt('within_3y', '1년 초과~3년 이내 관광 목적으로 방문'),
           opt('over_3y', '3년 이전에 방문'), opt('never', '방문 경험 없음'), opt('resident', '현재 전주 거주자')] },
@@ -191,7 +225,7 @@ export const STEPS = [
           opt('unlikely', '구매할 가능성이 낮음'), opt('no', '구매하지 않을 것임')] },
       { id: 'choice_30000', num: 29, type: 'single', required: true, short: '예산 3만원 선택',
         title: '전주 여행을 마치기 전, 먹거리 기념품을 하나만 구매할 수 있고 예산은 30,000원이라고 가정하겠습니다. 무엇을 선택하시겠습니까?',
-        image: { src: './images/competitor-chocopie.webp', width: 857, height: 581,
+        image: { src: '/survey/images/competitor-chocopie.webp', width: 857, height: 581,
           alt: '주황색 선물 상자와 개별 포장된 수제 초코파이', caption: '비교 상품 예시 · 초코파이 10개 23,000원' },
         options: [opt('buri', '전주BURI 기와 초콜릿 9구 (27,900원)'), opt('known', '기존에 알고 있거나 선호하는 전주 먹거리 기념품'),
           opt('other_food', '다른 종류의 먹거리 기념품'), opt('save', '먹거리 기념품을 구매하지 않고 돈을 아끼겠음')] },
@@ -284,66 +318,105 @@ const hasText = (v) => typeof v === 'string' && v.trim().length > 0;
 const optionValues = (q) => q.options.map((o) => o.value);
 export const selectLimit = (q) => q.exact || q.max || null;
 
+// 검증 오류 메시지(한국어·영어)
+export const VALIDATION_MSG = {
+  ko: {
+    select: '항목을 선택해 주세요.',
+    invalid: '선택한 값이 올바르지 않습니다.',
+    other: '기타 내용을 입력해 주세요.',
+    pickExact: (n) => `${n}개를 선택해 주세요.`,
+    pickOne: '하나 이상 선택해 주세요.',
+    exclusive: (label) => `‘${label}’은 다른 항목과 함께 선택할 수 없습니다.`,
+    exact: (n, c) => `정확히 ${n}개를 선택해 주세요. (현재 ${c}개)`,
+    max: (n, c) => `최대 ${n}개까지 선택할 수 있습니다. (현재 ${c}개)`,
+    matrix: (labels) => `${labels.join(', ')}의 점수를 선택해 주세요.`,
+    amount: (none) => `금액을 입력하거나 ‘${none}’을 선택해 주세요.`,
+    amountRange: (max) => `1원부터 ${max.toLocaleString('ko-KR')}원 사이의 금액을 입력해 주세요.`,
+    badText: '입력값이 올바르지 않습니다.',
+    textMax: (n) => `${n}자 이내로 입력해 주세요.`,
+  },
+  en: {
+    select: 'Please choose an answer.',
+    invalid: 'This answer is not valid.',
+    other: 'Please tell us what “Other” means.',
+    pickExact: (n) => `Please choose ${n}.`,
+    pickOne: 'Please choose at least one.',
+    exclusive: (label) => `“${label}” cannot be combined with other answers.`,
+    exact: (n, c) => `Please choose exactly ${n}. (You chose ${c}.)`,
+    max: (n, c) => `You can choose up to ${n}. (You chose ${c}.)`,
+    matrix: (labels) => `Please rate: ${labels.join(', ')}.`,
+    amount: (none) => `Please enter an amount or choose “${none}”.`,
+    amountRange: (max) => `Please enter an amount between 1 and ${max.toLocaleString('en-US')} KRW.`,
+    badText: 'This answer is not valid.',
+    textMax: (n) => `Please keep it under ${n} characters.`,
+  },
+};
+
 // 문항 하나를 검증하고 오류 메시지(없으면 null)를 돌려줍니다.
-export function validateQuestion(q, answers) {
+// q는 표시 언어로 바꾼 문항이어도 됩니다(ID·선택지 코드는 동일).
+export function validateQuestion(q, answers, lang = 'ko') {
+  if (q.langs && !q.langs.includes(lang)) return null; // 특정 언어 설문에서만 묻는 문항
   if (!isVisible(q, answers)) return null;
+  const M = VALIDATION_MSG[lang] || VALIDATION_MSG.ko;
   const v = answers[q.id];
   switch (q.type) {
     case 'single':
+    case 'select':
     case 'scale': {
-      if (v === undefined || v === null || v === '') return q.required ? '항목을 선택해 주세요.' : null;
-      if (!optionValues(q).includes(v)) return '선택한 값이 올바르지 않습니다.';
+      if (v === undefined || v === null || v === '') return q.required ? M.select : null;
+      if (!optionValues(q).includes(v)) return M.invalid;
       const o = q.options.find((x) => x.value === v);
-      if (o.other && !hasText(answers[`${q.id}_other`])) return '기타 내용을 입력해 주세요.';
+      if (o.other && !hasText(answers[`${q.id}_other`])) return M.other;
       return null;
     }
     case 'multi': {
       const arr = Array.isArray(v) ? v : [];
-      if (!arr.length) return q.required ? (q.exact ? `${q.exact}개를 선택해 주세요.` : '하나 이상 선택해 주세요.') : null;
-      if (new Set(arr).size !== arr.length || arr.some((x) => !optionValues(q).includes(x))) return '선택한 값이 올바르지 않습니다.';
+      if (!arr.length) return q.required ? (q.exact ? M.pickExact(q.exact) : M.pickOne) : null;
+      if (new Set(arr).size !== arr.length || arr.some((x) => !optionValues(q).includes(x))) return M.invalid;
       const excl = q.options.filter((o) => o.exclusive).map((o) => o.value);
       const pickedExcl = arr.filter((x) => excl.includes(x));
-      if (pickedExcl.length && arr.length > 1) return `‘${q.options.find((o) => o.value === pickedExcl[0]).label}’은 다른 항목과 함께 선택할 수 없습니다.`;
+      if (pickedExcl.length && arr.length > 1) return M.exclusive(q.options.find((o) => o.value === pickedExcl[0]).label);
       if (pickedExcl.length) return null; // 단독 선택한 배타 항목은 개수 조건을 적용하지 않습니다.
-      if (q.exact && arr.length !== q.exact) return `정확히 ${q.exact}개를 선택해 주세요. (현재 ${arr.length}개)`;
-      if (q.max && arr.length > q.max) return `최대 ${q.max}개까지 선택할 수 있습니다. (현재 ${arr.length}개)`;
-      if (arr.includes('other') && !hasText(answers[`${q.id}_other`])) return '기타 내용을 입력해 주세요.';
+      if (q.exact && arr.length !== q.exact) return M.exact(q.exact, arr.length);
+      if (q.max && arr.length > q.max) return M.max(q.max, arr.length);
+      if (arr.includes('other') && !hasText(answers[`${q.id}_other`])) return M.other;
       return null;
     }
     case 'matrix': {
       const missing = q.rows.filter((r) => !optionValues(q).includes(answers[r.id]));
-      if (missing.length && q.required) return `${missing.map((r) => r.label).join(', ')}의 점수를 선택해 주세요.`;
+      if (missing.length && q.required) return M.matrix(missing.map((r) => r.label));
       return null;
     }
     case 'amount': {
       if (answers[q.noneKey] === true) return null;
       const n = answers[q.amountKey];
-      if (n === undefined || n === null || n === '') return `금액을 입력하거나 ‘${q.noneLabel}’을 선택해 주세요.`;
-      if (!Number.isInteger(n) || n < 1 || n > AMOUNT_MAX) return `1원부터 ${AMOUNT_MAX.toLocaleString('ko-KR')}원 사이의 금액을 입력해 주세요.`;
+      if (n === undefined || n === null || n === '') return M.amount(q.noneLabel);
+      if (!Number.isInteger(n) || n < 1 || n > AMOUNT_MAX) return M.amountRange(AMOUNT_MAX);
       return null;
     }
     case 'text':
-      if (v !== undefined && v !== null && typeof v !== 'string') return '입력값이 올바르지 않습니다.';
-      if (typeof v === 'string' && v.length > TEXT_MAX) return `${TEXT_MAX}자 이내로 입력해 주세요.`;
+      if (v !== undefined && v !== null && typeof v !== 'string') return M.badText;
+      if (typeof v === 'string' && v.length > TEXT_MAX) return M.textMax(TEXT_MAX);
       return null;
     default:
       return null;
   }
 }
 
-export function validateStep(stepId, answers) {
-  const step = STEPS.find((s) => s.id === stepId);
+// steps: 표시 언어로 바꾼 단계 목록(생략 시 한국어 원본)
+export function validateStep(stepId, answers, lang = 'ko', steps = STEPS) {
+  const step = steps.find((s) => s.id === stepId);
   const errors = {};
   for (const q of step.questions) {
-    const e = validateQuestion(q, answers);
+    const e = validateQuestion(q, answers, lang);
     if (e) errors[q.id] = e;
   }
   return errors;
 }
 
-export function validateAll(answers) {
+export function validateAll(answers, lang = 'ko', steps = STEPS) {
   const errors = {};
-  for (const s of STEPS) Object.assign(errors, validateStep(s.id, answers));
+  for (const s of steps) Object.assign(errors, validateStep(s.id, answers, lang, steps));
   return errors;
 }
 
@@ -380,6 +453,11 @@ export function normalizeAnswers(answers) {
     occupation: single('occupation'),
     occupation_other: otherFor('occupation'),
     residence: single('residence'),
+    // 국내 거주 응답은 KR, 해외 거주 응답은 선택한 국가 코드(목록에 없으면 'other' + 직접 입력)
+    residence_country: answers.residence && answers.residence !== 'overseas' ? 'KR' : single('residence_country'),
+    residence_country_other: otherFor('residence_country'),
+    nationality: single('nationality'),
+    nationality_other: otherFor('nationality'),
     jeonju_visit: single('visit'),
     moju_experience: single('moju_exp'),
     best_taste: single('best_taste'),

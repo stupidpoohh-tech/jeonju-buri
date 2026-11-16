@@ -1,4 +1,4 @@
--- 전주BURI 기와 초콜릿 소비자 설문 — Cloudflare D1(SQLite) 스키마 (설문 버전 2026-11-v4)
+-- 전주BURI 기와 초콜릿 소비자 설문 — Cloudflare D1(SQLite) 스키마 (설문 버전 2026-11-v5)
 -- 기존 서비스에는 데이터베이스가 없으므로 설문 전용 D1 데이터베이스에 적용합니다.
 -- 적용: npx wrangler d1 execute <DB 이름> --remote --file=survey/db/schema.sql
 -- 선택지 값은 survey/schema.js의 고정 코드로 저장합니다(표시 문구는 schema.js에서 매핑).
@@ -8,6 +8,9 @@
 CREATE TABLE IF NOT EXISTS survey_responses (
   id                       TEXT PRIMARY KEY,          -- 고유 응답 ID(UUID)
   survey_version           TEXT NOT NULL,
+  prototype_version        TEXT,                      -- 시식 시제품 버전(v5에서 추가)
+  survey_language          TEXT,                      -- 응답 언어 ko | en (v5에서 추가, 이전 응답은 NULL = 한국어)
+  survey_source            TEXT,                      -- 조사 경로 office | hanok | general (QR 배포 경로, v5에서 추가)
   submitted_at             TEXT NOT NULL,             -- 서버 수신 시각(ISO 8601, UTC)
   started_at               TEXT,                      -- 설문 시작 시각(브라우저 기준)
   duration_sec             INTEGER,                   -- 시작~제출 소요시간(초), 비정상 값은 NULL
@@ -16,6 +19,10 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   occupation               TEXT,                      -- Q3 직장인/학생/기타 (v3에서 추가, 이전 응답은 NULL)
   occupation_other         TEXT,                      -- Q3 기타 내용
   residence                TEXT NOT NULL,             -- Q4
+  residence_country        TEXT,                      -- Q4-1 거주국가 ISO 3166-1 alpha-2(국내 거주는 KR, 목록 외는 other) (v5에서 추가)
+  residence_country_other  TEXT,                      -- Q4-1 목록에 없는 국가 직접 입력
+  nationality              TEXT,                      -- 국적(영어 설문에서만 질문, ISO 3166-1 alpha-2, 목록 외는 other) (v5에서 추가)
+  nationality_other        TEXT,                      -- 국적 목록에 없는 국가 직접 입력
   jeonju_visit             TEXT NOT NULL,             -- Q5
   moju_experience          TEXT NOT NULL,             -- Q6
   best_taste               TEXT NOT NULL,             -- Q19

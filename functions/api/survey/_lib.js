@@ -1,6 +1,6 @@
 // 설문 API 공용 도구 — 라우트 파일이 아니며 onRequest 핸들러를 내보내지 않습니다.
 import {
-  FLAVORS, ALL_QUESTIONS, QUESTION_BY_ID, FLAVOR_OPTIONS, labelOf,
+  FLAVORS, ALL_QUESTIONS, QUESTION_BY_ID, FLAVOR_OPTIONS, COUNTRY_NAMES, labelOf,
 } from '../../../survey/schema.js';
 
 const BASE_HEADERS = {
@@ -73,6 +73,12 @@ export async function loadResponses(db) {
   }
   return r.results.map((row) => ({
     ...row,
+    // v5 이전 응답에는 언어·조사 경로가 없습니다. 당시 설문은 한국어만 있었으므로 ko, 경로는 general로 읽습니다.
+    survey_language: row.survey_language || 'ko',
+    survey_source: row.survey_source || 'general',
+    meta_recorded: !!row.survey_language,
+    // v5 이전 응답의 국내 거주자는 거주지역으로부터 KR을 채웁니다(해외 거주 응답은 국가 미기록).
+    residence_country: row.residence_country || (row.residence && row.residence !== 'overseas' ? 'KR' : null),
     souvenir_fit: parseListOrSingle(row.souvenir_fit),
     flavors: flavorsBy.get(row.id) || {},
     purchase: purchaseBy.get(row.id) || {},
@@ -114,6 +120,10 @@ export function respondentsCsv(responses) {
   add('소요시간(초) [duration_sec]', (r) => r.duration_sec);
   add('설문버전 [survey_version]', (r) => r.survey_version);
   add('동일기기 이전제출수 [device_prior_submissions]', (r) => r.device_prior_submissions);
+  add('응답 언어 [survey_language]', (r) => r.survey_language);
+  add('조사 경로 [survey_source]', (r) => r.survey_source);
+  add('언어·경로 기록 여부(v5 이후 1) [meta_recorded]', (r) => (r.meta_recorded ? 1 : 0));
+  add('시제품 버전 [prototype_version]', (r) => r.prototype_version);
 
   const q = (id) => QUESTION_BY_ID[id];
   const singleCol = (id, getter) => add(`Q${q(id).num} ${q(id).short} [${id}]`, (r) => labelOf(id, getter(r)));
@@ -133,6 +143,12 @@ export function respondentsCsv(responses) {
   singleCol('occupation', (r) => r.occupation);
   add(`Q${q('occupation').num} ${q('occupation').short}: 기타 내용 [occupation_other]`, (r) => r.occupation_other);
   singleCol('residence', (r) => r.residence);
+  add(`Q${q('residence_country').num} 거주국가 코드 [residence_country]`, (r) => r.residence_country);
+  add(`Q${q('residence_country').num} 거주국가 [residence_country_name]`, (r) => (r.residence_country ? COUNTRY_NAMES[r.residence_country]?.ko ?? (r.residence_country === 'other' ? '기타' : r.residence_country) : ''));
+  add(`Q${q('residence_country').num} 거주국가 기타 내용 [residence_country_other]`, (r) => r.residence_country_other);
+  add('국적(영어 설문) 코드 [nationality]', (r) => r.nationality);
+  add('국적(영어 설문) [nationality_name]', (r) => (r.nationality ? COUNTRY_NAMES[r.nationality]?.ko ?? (r.nationality === 'other' ? '기타' : r.nationality) : ''));
+  add('국적(영어 설문) 기타 내용 [nationality_other]', (r) => r.nationality_other);
   singleCol('visit', (r) => r.jeonju_visit);
   singleCol('moju_exp', (r) => r.moju_experience);
 
@@ -183,7 +199,7 @@ export function respondentsCsv(responses) {
 
 // 맛별 평가 1행(롱) CSV: 응답자 × 맛
 export function flavorsCsv(responses) {
-  const header = ['응답ID [response_id]', '제출일시 KST [submitted_at]', '연령대 [age_group]', '성별 [gender]', '직업 [occupation]', '거주지역 [residence]', '모주 음용 경험 [moju_experience]',
+  const header = ['응답ID [response_id]', '제출일시 KST [submitted_at]', '응답 언어 [survey_language]', '조사 경로 [survey_source]', '거주국가 [residence_country]', '국적(영어 설문) [nationality]', '연령대 [age_group]', '성별 [gender]', '직업 [occupation]', '거주지역 [residence]', '모주 음용 경험 [moju_experience]',
     '맛 [flavor]', '맛 이름 [flavor_name]', '만족도(1-5) [satisfaction]', '단맛(1-5) [sweetness]', '단맛 응답 [sweetness_label]',
     '향·풍미(1-5) [aroma]', '향·풍미 응답 [aroma_label]',
     ...FLAVOR_OPTIONS.improvements.map((o) => `개선: ${o.label} [improve__${o.value}]`),
@@ -193,7 +209,7 @@ export function flavorsCsv(responses) {
     for (const f of FLAVORS) {
       const x = r.flavors[f.id];
       if (!x) continue;
-      rows.push([r.id, kstString(r.submitted_at), labelOf('age', r.age_group), labelOf('gender', r.gender), labelOf('occupation', r.occupation), labelOf('residence', r.residence), labelOf('moju_exp', r.moju_experience),
+      rows.push([r.id, kstString(r.submitted_at), r.survey_language, r.survey_source, r.residence_country, r.nationality, labelOf('age', r.age_group), labelOf('gender', r.gender), labelOf('occupation', r.occupation), labelOf('residence', r.residence), labelOf('moju_exp', r.moju_experience),
         f.id, flavorName(f.id), x.satisfaction, x.sweetness, optLabel(FLAVOR_OPTIONS.sweetness, x.sweetness),
         x.aroma, optLabel(FLAVOR_OPTIONS.aroma, x.aroma),
         ...FLAVOR_OPTIONS.improvements.map((o) => (x.improvements.includes(o.value) ? 1 : 0)),

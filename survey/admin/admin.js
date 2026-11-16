@@ -1,5 +1,10 @@
 // 설문 관리자 대시보드 — 실제 저장된 응답만 집계합니다.
-import { FLAVORS, QUESTION_BY_ID, FLAVOR_OPTIONS, PROPOSED_PRICE, labelOf, SURVEY_VERSION } from '../schema.js';
+import { FLAVORS, QUESTION_BY_ID, FLAVOR_OPTIONS, PROPOSED_PRICE, COUNTRY_NAMES, labelOf, SURVEY_VERSION } from '../schema.js';
+
+const LANG_LABEL = { ko: '한국어', en: '영어' };
+const SOURCE_LABEL = { office: '회사 조사', hanok: '한옥마을 조사', general: '일반 접속' };
+const countryLabel = (c) => (!c ? '미기록' : c === 'other' ? '기타(목록 외)' : COUNTRY_NAMES[c] ? `${COUNTRY_NAMES[c].ko} (${c})` : c);
+const SMALL_N = 30; // 이 수보다 작은 집단은 '표본 적음'으로 표시합니다.
 
 const API = '/api/survey/admin';
 const TOKEN_KEY = 'buriSurvey.adminToken';
@@ -13,7 +18,10 @@ const ss = {
   del() { try { sessionStorage.removeItem(TOKEN_KEY); } catch { /* 무시 */ } },
 };
 let token = ss.get();
-let data = [];
+let all = []; // 저장된 전체 응답
+let data = []; // 필터를 적용한 응답(모든 집계에 사용)
+let generatedAtCache = null;
+const filters = { lang: '', source: '', age: '', country: '', visit: '', bought: '' };
 
 function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
@@ -57,7 +65,7 @@ async function load() {
   if (res.status === 401) { logout('인증이 만료되었거나 비밀번호가 올바르지 않습니다.'); return; }
   const body = await res.json().catch(() => ({}));
   if (!res.ok) return showMessage(body.message || `오류가 발생했습니다. (코드 ${res.status})`);
-  data = body.responses || [];
+  all = body.responses || [];
   render(body.generatedAt);
 }
 function showMessage(msg) {
@@ -95,7 +103,7 @@ $('#ad-login-form').addEventListener('submit', async (e) => {
     ss.set(pw);
     $('#ad-password').value = '';
     showDashboard();
-    data = body.responses || [];
+    all = body.responses || [];
     render(body.generatedAt);
     $('#ad-main').focus();
   } catch {
@@ -153,15 +161,92 @@ function tableEl(head, rows, numCols = []) {
 const flavorCell = (f) => h('span', { class: `ad-s-${f.id}` }, h('span', { class: 'ad-flavor-dot', style: { background: 'var(--ad-bar)' } }), f.name);
 
 // ---------- 화면 ----------
+function applyFilters() {
+  const bought = (r) => r.purchase?.souv_freq && r.purchase.souv_freq !== 'none';
+  data = all.filter((r) => (!filters.lang || r.survey_language === filters.lang)
+    && (!filters.source || r.survey_source === filters.source)
+    && (!filters.age || r.age_group === filters.age)
+    && (!filters.country || (r.residence_country || '') === (filters.country === '_none' ? '' : filters.country))
+    && (!filters.visit || r.jeonju_visit === filters.visit)
+    && (!filters.bought || (filters.bought === 'yes' ? bought(r) : !bought(r))));
+}
+
+function filterBar() {
+  const countries = [...new Set(all.map((r) => r.residence_country || '_none'))].sort();
+  const sel = (key, label, options) => {
+    const el = h('select', { class: 'sv-input ad-filter__select', id: `f-${key}`, 'aria-label': label },
+      h('option', { value: '', text: `${label}: 전체` }), options.map(([v, t]) => h('option', { value: v, text: t })));
+    el.value = filters[key];
+    el.addEventListener('change', () => { filters[key] = el.value; render(generatedAtCache); const again = $(`#f-${key}`); if (again) again.focus(); });
+    return el;
+  };
+  const active = Object.values(filters).some(Boolean);
+  return h('section', { class: 'ad-filters', 'aria-label': '응답 필터' },
+    sel('lang', '언어', Object.entries(LANG_LABEL)),
+    sel('source', '조사 경로', Object.entries(SOURCE_LABEL)),
+    sel('age', '연령대', QUESTION_BY_ID.age.options.map((o) => [o.value, o.label])),
+    sel('country', '거주국가', countries.map((c) => [c, c === '_none' ? '미기록' : countryLabel(c)])),
+    sel('visit', '전주 방문', QUESTION_BY_ID.visit.options.map((o) => [o.value, o.label])),
+    sel('bought', '최근 1년 기념품 구매', [['yes', '구매 경험 있음'], ['no', '구매한 적 없음']]),
+    active ? h('button', { type: 'button', class: 'sv-btn sv-btn--ghost sv-btn--small', onclick: () => { Object.keys(filters).forEach((k) => { filters[k] = ''; }); render(generatedAtCache); } }, '필터 초기화') : null);
+}
+
 function render(generatedAt) {
+  generatedAtCache = generatedAt;
+  applyFilters();
   const dash = $('#ad-dashboard');
   const n = data.length;
-  const head = h('p', { class: 'ad-sub ad-msg', text: `설문 버전 ${SURVEY_VERSION} · 조회 시각 ${generatedAt ? kst(generatedAt) : ''} · 실제 저장된 응답 ${n}건 기준` });
-  if (!n) {
+  const active = Object.values(filters).some(Boolean);
+  const head = h('p', { class: 'ad-sub ad-msg', text: `설문 버전 ${SURVEY_VERSION} · 조회 시각 ${generatedAt ? kst(generatedAt) : ''} · 실제 저장된 응답 ${all.length}건${active ? ` 중 필터 적용 ${n}건` : ''} 기준` });
+  const caveat = h('p', { class: 'ad-caveat', text: '현장·지인 대상의 편의표집 결과입니다. 비율은 이 표본 안의 응답 비율이며, 전체 관광객이나 소비자의 구매율로 일반화할 수 없습니다. ‘구매의향’은 설문 응답이고 실제 구매전환율이 아닙니다.' });
+  if (!all.length) {
     dash.replaceChildren(head, h('div', { class: 'ad-panel' }, h('p', { class: 'ad-empty', text: '아직 제출된 응답이 없습니다.' })), downloadSection());
     return;
   }
-  dash.replaceChildren(head, overview(), flavorSection(), purchaseSection(), commentSection(), respondentSection(), downloadSection());
+  if (!n) {
+    dash.replaceChildren(head, filterBar(), h('div', { class: 'ad-panel' }, h('p', { class: 'ad-empty', text: '필터 조건에 맞는 응답이 없습니다.' })), downloadSection());
+    return;
+  }
+  dash.replaceChildren(head, filterBar(), caveat, overview(), compareSection(), flavorSection(), purchaseSection(), commentSection(), respondentSection(), downloadSection());
+}
+
+// ---------- 집단 비교 ----------
+const isDomestic = (r) => r.residence && r.residence !== 'overseas';
+const COMPARISONS = [
+  { title: '한국어 설문 vs 영어 설문', groups: [['한국어', (r) => r.survey_language === 'ko'], ['영어', (r) => r.survey_language === 'en']] },
+  { title: '회사 조사 vs 한옥마을 조사', groups: [['회사 조사', (r) => r.survey_source === 'office'], ['한옥마을 조사', (r) => r.survey_source === 'hanok']] },
+  { title: '국내 거주자 vs 해외 거주자', groups: [['국내 거주', isDomestic], ['해외 거주', (r) => r.residence === 'overseas']] },
+  { title: '25~39세 vs 기타 연령대', groups: [['25~39세', (r) => ['25_29', '30_34', '35_39'].includes(r.age_group)], ['기타 연령대', (r) => !['25_29', '30_34', '35_39'].includes(r.age_group)]] },
+  { title: '최근 1년 기념품 구매 경험자 vs 비구매자', groups: [['구매 경험 있음', (r) => r.purchase?.souv_freq && r.purchase.souv_freq !== 'none'], ['구매한 적 없음', (r) => r.purchase?.souv_freq === 'none']] },
+];
+
+function groupMetrics(rows) {
+  const P = (r) => r.purchase || {};
+  const amounts = rows.map((r) => P(r).wtp_amount).filter((x) => Number.isInteger(x));
+  const best = QUESTION_BY_ID.best_taste.options.map((o) => ({ o, c: rows.filter((r) => r.best_taste === o.value).length })).sort((a, b) => b.c - a.c)[0];
+  const n = rows.length;
+  return [
+    ...FLAVORS.map((f) => [`${f.short} 평균 만족도(1~5)`, fmt1(mean(rows.map((r) => r.flavors[f.id]?.satisfaction).filter((v) => v != null)))]),
+    ['가장 맛있는 초콜릿 최다 응답', best && best.c ? `${best.o.label} ${pct(best.c, n)}` : '–'],
+    ['최대 지불의향 중앙값', median(amounts) == null ? '–' : `${won(median(amounts))} (입력 ${amounts.length}명)`],
+    [`${PROPOSED_PRICE.toLocaleString('ko-KR')}원 이상 지불의향 응답`, pct(amounts.filter((x) => x >= PROPOSED_PRICE).length, n)],
+    ['가격 무관 구매 의향 없음', pct(rows.filter((r) => P(r).wtp_no_intent).length, n)],
+    [`${PROPOSED_PRICE.toLocaleString('ko-KR')}원 구매의향 응답(반드시+가능성 높음)`, pct(rows.filter((r) => ['definitely', 'likely'].includes(P(r).intent_27900)).length, n)],
+    ['예산 3만원에서 전주BURI 선택', pct(rows.filter((r) => P(r).choice_30000 === 'buri').length, n)],
+  ];
+}
+
+function compareSection() {
+  return h('section', { class: 'ad-section', id: 'compare', 'aria-labelledby': 'cp-t' },
+    h('h2', { id: 'cp-t', text: '집단 비교' }),
+    h('p', { class: 'ad-sub', text: `현재 필터가 적용된 응답 안에서 비교합니다. 각 집단의 표본 수(n)를 함께 표시하며, n이 ${SMALL_N} 미만이면 ‘표본 적음’으로 표시합니다. 비율의 분모는 각 집단의 응답자 수입니다.` }),
+    h('div', { class: 'ad-grid' }, COMPARISONS.map((c) => {
+      const groups = c.groups.map(([label, fn]) => ({ label, rows: data.filter(fn) }));
+      const metrics = groups.map((g) => groupMetrics(g.rows));
+      const head = ['지표', ...groups.map((g) => `${g.label} (n=${g.rows.length}${g.rows.length < SMALL_N ? ', 표본 적음' : ''})`)];
+      const rows = metrics[0].map((m, i) => [m[0], ...metrics.map((x) => (groups[metrics.indexOf(x)].rows.length ? x[i][1] : '–'))]);
+      return h('div', { class: 'ad-panel ad-panel--wide' }, h('h3', { text: c.title }), tableEl(head, rows, [1, 2]));
+    })));
 }
 
 function overview() {
@@ -178,6 +263,10 @@ function overview() {
       stat('동일 기기 재참여 응답', `${repeat}건`, '같은 브라우저에서 이전 제출 기록이 있는 응답')),
     h('div', { class: 'ad-grid' },
       panel('응답 일자별 추이', '한국 시간 기준 제출 일자', barList(Object.keys(days).sort().map((d) => ({ label: d, count: days[d] })), n, { unit: '건' })),
+      panel('응답 언어', 'v5 이전 응답은 한국어로 집계', barList(Object.entries(LANG_LABEL).map(([k, v]) => ({ label: v, count: data.filter((r) => r.survey_language === k).length })), n)),
+      panel('조사 경로', 'QR 배포 경로(응답자의 위치·국적이 아님) · v5 이전 응답은 일반 접속으로 집계', barList(Object.entries(SOURCE_LABEL).map(([k, v]) => ({ label: v, count: data.filter((r) => r.survey_source === k).length })), n)),
+      panel('거주국가 분포', `${qn('residence')}·${qn('residence_country')} · 국내 거주는 대한민국`, barList([...new Set(data.map((r) => r.residence_country || ''))].map((c) => ({ label: countryLabel(c), count: data.filter((r) => (r.residence_country || '') === c).length })).sort((a, b) => b.count - a.count), n)),
+      panel('국적(영어 설문)', `영어 설문 응답자 ${data.filter((r) => r.survey_language === 'en').length}명 기준`, (() => { const en = data.filter((r) => r.survey_language === 'en'); return en.length ? barList([...new Set(en.map((r) => r.nationality || ''))].map((c) => ({ label: countryLabel(c), count: en.filter((r) => (r.nationality || '') === c).length })).sort((a, b) => b.count - a.count), en.length) : h('p', { class: 'ad-empty', text: '영어 설문 응답 없음' }); })()),
       panel('연령대 분포', qn('age'), barList(countSingle('age', (r) => r.age_group), n)),
       panel('성별 분포', `${qn('gender')} · 성별 문항 추가 이전 응답은 집계 제외`, barList(countSingle('gender', (r) => r.gender), data.filter((r) => r.gender).length)),
       panel('직업 분포', `${qn('occupation')} · v3 이전 응답은 집계 제외`, barList(countSingle('occupation', (r) => r.occupation), data.filter((r) => r.occupation).length)),
@@ -253,7 +342,7 @@ function purchaseSection() {
       stat(`가격 공개 후 ${qn('wtp')} 수정`, `${revised}명`, '지불의향 분석 시 확인 필요')),
     h('div', { class: 'ad-grid' },
       panel('최대 지불의향 금액 분포', qn('wtp'), barList(buckets, n)),
-      panel(`${PROPOSED_PRICE.toLocaleString('ko-KR')}원 구매의향`, qn('intent_27900'), sp('intent_27900')),
+      panel(`${PROPOSED_PRICE.toLocaleString('ko-KR')}원 구매의향`, `${qn('intent_27900')} · 설문 응답 기준(실제 구매전환율 아님)`, sp('intent_27900')),
       panel('예산 30,000원 선택(경쟁상품 대비)', qn('choice_30000'), sp('choice_30000')),
       panel('선택 이유 (전주BURI 선택자)', `${qn('reason_buy')}① · 최대 2개 · 해당 응답자 ${buri.length}명 기준`, buri.length ? mp('reason_buy', buri) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
       panel('비선택 이유 (그 외 선택자)', `${qn('reason_not')}② · 최대 2개 · 해당 응답자 ${notBuri.length}명 기준`, notBuri.length ? mp('reason_not', notBuri) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
@@ -280,7 +369,7 @@ function commentSection() {
   data.forEach((r) => {
     FLAVORS.forEach((f) => { const x = r.flavors[f.id]; if (x?.improvements_other) others.push({ text: `[${f.name} 개선 요소 기타] ${x.improvements_other}`, meta: meta(r) }); });
     const p = r.purchase || {};
-    [['occupation_other', qn('occupation')], ['souv_criteria_other', qn('souv_criteria')], ['reason_buy_other', `${qn('reason_buy')}①`], ['reason_not_other', `${qn('reason_not')}②`], ['info_needed_other', qn('info_needed')], ['improve_priority_other', qn('improve_priority')]]
+    [['nationality_other', '국적'], ['occupation_other', qn('occupation')], ['souv_criteria_other', qn('souv_criteria')], ['reason_buy_other', `${qn('reason_buy')}①`], ['reason_not_other', `${qn('reason_not')}②`], ['info_needed_other', qn('info_needed')], ['improve_priority_other', qn('improve_priority')]]
       .forEach(([k, q]) => { const v = p[k] ?? r[k]; if (v) others.push({ text: `[${q} 기타] ${v}`, meta: meta(r) }); });
   });
   return h('section', { class: 'ad-section', id: 'comments', 'aria-labelledby': 'co-t' },
@@ -294,14 +383,14 @@ function respondentSection() {
   const detail = h('div', { class: 'ad-detail', id: 'ad-detail', tabindex: '-1' });
   const rows = [...data].reverse().map((r) => [
     h('button', { type: 'button', class: 'ad-rowbtn', onclick: () => showDetail(r, detail) }, r.id.slice(0, 8)),
-    kst(r.submitted_at), labelOf('age', r.age_group), labelOf('gender', r.gender) || '–', labelOf('occupation', r.occupation) || '–', labelOf('residence', r.residence), labelOf('visit', r.jeonju_visit), labelOf('moju_exp', r.moju_experience),
+    kst(r.submitted_at), LANG_LABEL[r.survey_language] || r.survey_language, SOURCE_LABEL[r.survey_source] || r.survey_source, countryLabel(r.residence_country), labelOf('age', r.age_group), labelOf('gender', r.gender) || '–', labelOf('occupation', r.occupation) || '–', labelOf('residence', r.residence), labelOf('visit', r.jeonju_visit), labelOf('moju_exp', r.moju_experience),
     ...FLAVORS.map((f) => String(r.flavors[f.id]?.satisfaction ?? '–')),
     r.purchase?.wtp_no_intent ? '의향 없음' : r.purchase?.wtp_amount != null ? won(r.purchase.wtp_amount) : '–',
     labelOf('intent_27900', r.purchase?.intent_27900)]);
   return h('section', { class: 'ad-section', id: 'respondents', 'aria-labelledby': 're-t' },
     h('h2', { id: 're-t', text: '응답자별 원문 조회' }),
     h('div', { class: 'ad-panel' }, h('p', { class: 'ad-sub', text: '응답 번호를 누르면 전체 응답을 볼 수 있습니다. 최근 제출 순.' }),
-      tableEl(['응답 번호', '제출 일시', '연령대', '성별', '직업', '거주지역', '전주 방문', '모주 경험', '모주 만족', '연잎 만족', '커피 만족', '최대 지불의향', '27,900원 구매의향'], rows, [8, 9, 10, 11]),
+      tableEl(['응답 번호', '제출 일시', '언어', '조사 경로', '거주국가', '연령대', '성별', '직업', '거주지역', '전주 방문', '모주 경험', '모주 만족', '연잎 만족', '커피 만족', '최대 지불의향', '27,900원 구매의향'], rows, [11, 12, 13, 14]),
       detail));
 }
 
@@ -321,6 +410,11 @@ function showDetail(r, box) {
   box.replaceChildren(h('h3', { text: `응답 ${r.id}` }),
     h('h4', { text: '응답자 정보' }),
     pairs([['제출 일시', kst(r.submitted_at)], ['소요시간', durationText(r.duration_sec)], ['설문 버전', r.survey_version],
+      ['응답 언어', `${LANG_LABEL[r.survey_language] || r.survey_language}${r.meta_recorded ? '' : ' (v5 이전 응답, 추정)'}`],
+      ['조사 경로', `${SOURCE_LABEL[r.survey_source] || r.survey_source}${r.meta_recorded ? '' : ' (v5 이전 응답, 미기록)'}`],
+      ['시제품 버전', r.prototype_version || '미기록'],
+      ['국적(영어 설문)', r.survey_language === 'en' ? countryLabel(r.nationality) + (r.nationality_other ? ` (기타: ${r.nationality_other})` : '') : '해당 없음(한국어 설문)'],
+      [`${qn('residence_country')} 거주국가`, countryLabel(r.residence_country) + (r.residence_country_other ? ` (기타: ${r.residence_country_other})` : '')],
       ['동일 기기 이전 제출', `${r.device_prior_submissions}회`], [`${qn('age')} 연령대`, labelOf('age', r.age_group)],
       [`${qn('gender')} 성별`, r.gender ? labelOf('gender', r.gender) : '–'],
       [`${qn('occupation')} 직업`, r.occupation ? labelOf('occupation', r.occupation) + (r.occupation_other ? ` (기타: ${r.occupation_other})` : '') : '–'],

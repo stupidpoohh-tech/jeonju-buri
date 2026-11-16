@@ -1,7 +1,7 @@
 // POST /api/survey/responses — 설문 응답 제출(로그인 없음)
 // 서버에서 schema.js 규칙으로 다시 검증한 뒤 D1에 한 번의 batch(트랜잭션)로 저장합니다.
 import {
-  SURVEY_VERSION, ALL_QUESTIONS, validateAll, normalizeAnswers, OTHER_MAX, TEXT_MAX,
+  SURVEY_VERSION, PROTOTYPE_VERSION, ALL_QUESTIONS, LANGS, SOURCES, validateAll, normalizeAnswers, OTHER_MAX, TEXT_MAX,
 } from '../../../survey/schema.js';
 import { json, getDb } from './_lib.js';
 
@@ -35,6 +35,10 @@ export async function onRequestPost({ request, env }) {
   if (!body || typeof body !== 'object') return json({ error: 'bad_request', message: '잘못된 요청 형식입니다.' }, 400);
 
   const { responseId, version, startedAt, answers, meta = {} } = body;
+  // 응답 언어와 조사 경로(QR 배포 경로)는 정해진 값만 허용합니다.
+  const lang = LANGS.includes(body.lang) ? body.lang : null;
+  if (!lang) return json({ error: 'bad_request', message: '응답 언어가 올바르지 않습니다.' }, 400);
+  const source = SOURCES.includes(body.source) ? body.source : 'general';
   if (typeof responseId !== 'string' || !UUID_RE.test(responseId)) return json({ error: 'bad_request', message: '응답 ID가 올바르지 않습니다.' }, 400);
   if (version !== SURVEY_VERSION) return json({ error: 'version_mismatch', message: '설문이 갱신되었습니다. 페이지를 새로고침한 뒤 다시 제출해 주세요.' }, 409);
   if (!answers || typeof answers !== 'object' || Array.isArray(answers)) return json({ error: 'bad_request', message: '응답 내용이 없습니다.' }, 400);
@@ -46,7 +50,9 @@ export async function onRequestPost({ request, env }) {
     else clean[k] = v;
   }
 
-  const errors = validateAll(clean);
+  // 언어별 문항: 국적(nationality)은 영어 설문에서만 받습니다.
+  if (lang !== 'en') { delete clean.nationality; delete clean.nationality_other; }
+  const errors = validateAll(clean, lang);
   if (Object.keys(errors).length) return json({ error: 'validation', message: '응답하지 않았거나 올바르지 않은 문항이 있습니다.', errors }, 422);
 
   const { respondent, flavors, purchase } = normalizeAnswers(clean);
@@ -68,10 +74,13 @@ export async function onRequestPost({ request, env }) {
 
   const submittedAt = now.toISOString();
   const stmts = [
-    db.prepare(`INSERT INTO survey_responses (id, survey_version, submitted_at, started_at, duration_sec, age_group, gender, occupation, occupation_other,
-      residence, jeonju_visit, moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-      .bind(responseId, SURVEY_VERSION, submittedAt, started, duration, respondent.age_group, respondent.gender, respondent.occupation, respondent.occupation_other,
-        respondent.residence, respondent.jeonju_visit,
+    db.prepare(`INSERT INTO survey_responses (id, survey_version, prototype_version, survey_language, survey_source, submitted_at, started_at,
+      duration_sec, age_group, gender, occupation, occupation_other, residence, residence_country, residence_country_other, nationality,
+      nationality_other, jeonju_visit, moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .bind(responseId, SURVEY_VERSION, PROTOTYPE_VERSION, lang, source, submittedAt, started, duration, respondent.age_group, respondent.gender,
+        respondent.occupation, respondent.occupation_other, respondent.residence, respondent.residence_country, respondent.residence_country_other,
+        respondent.nationality, respondent.nationality_other,
+        respondent.jeonju_visit,
         respondent.moju_experience, respondent.best_taste, respondent.most_unique, JSON.stringify(respondent.souvenir_fit), prior),
     ...flavors.map((f) => db.prepare(`INSERT INTO survey_flavor_ratings (response_id, flavor, satisfaction, sweetness, aroma,
       improvements, improvements_other, concept_fit) VALUES (?,?,?,?,?,?,?,?)`)
