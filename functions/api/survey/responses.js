@@ -68,9 +68,9 @@ export async function onRequestPost({ request, env }) {
 
   const submittedAt = now.toISOString();
   const stmts = [
-    db.prepare(`INSERT INTO survey_responses (id, survey_version, submitted_at, started_at, duration_sec, age_group, occupation, occupation_other,
-      residence, jeonju_visit, moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-      .bind(responseId, SURVEY_VERSION, submittedAt, started, duration, respondent.age_group, respondent.occupation, respondent.occupation_other,
+    db.prepare(`INSERT INTO survey_responses (id, survey_version, submitted_at, started_at, duration_sec, age_group, gender, occupation, occupation_other,
+      residence, jeonju_visit, moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .bind(responseId, SURVEY_VERSION, submittedAt, started, duration, respondent.age_group, respondent.gender, respondent.occupation, respondent.occupation_other,
         respondent.residence, respondent.jeonju_visit,
         respondent.moju_experience, respondent.best_taste, respondent.most_unique, JSON.stringify(respondent.souvenir_fit), prior),
     ...flavors.map((f) => db.prepare(`INSERT INTO survey_flavor_ratings (response_id, flavor, satisfaction, sweetness, aroma,

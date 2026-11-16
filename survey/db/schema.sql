@@ -12,14 +12,15 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   started_at               TEXT,                      -- 설문 시작 시각(브라우저 기준)
   duration_sec             INTEGER,                   -- 시작~제출 소요시간(초), 비정상 값은 NULL
   age_group                TEXT NOT NULL,             -- Q1
-  occupation               TEXT,                      -- Q2 직장인/학생/기타 (v3에서 추가, 이전 응답은 NULL)
-  occupation_other         TEXT,                      -- Q2 기타 내용
-  residence                TEXT NOT NULL,             -- Q3
-  jeonju_visit             TEXT NOT NULL,             -- Q4
-  moju_experience          TEXT NOT NULL,             -- Q5
-  best_taste               TEXT NOT NULL,             -- Q18
-  most_unique              TEXT NOT NULL,             -- Q19
-  souvenir_fit             TEXT NOT NULL,             -- Q21 JSON 배열(v4부터 복수 선택, 이전 응답은 단일 코드 문자열)
+  gender                   TEXT,                      -- Q2 여성/남성 (v4에서 추가, 이전 응답은 NULL)
+  occupation               TEXT,                      -- Q3 직장인/학생/기타 (v3에서 추가, 이전 응답은 NULL)
+  occupation_other         TEXT,                      -- Q3 기타 내용
+  residence                TEXT NOT NULL,             -- Q4
+  jeonju_visit             TEXT NOT NULL,             -- Q5
+  moju_experience          TEXT NOT NULL,             -- Q6
+  best_taste               TEXT NOT NULL,             -- Q19
+  most_unique              TEXT NOT NULL,             -- Q20
+  souvenir_fit             TEXT NOT NULL,             -- Q22 JSON 배열(v4부터 복수 선택, 이전 응답은 단일 코드 문자열)
   device_prior_submissions INTEGER NOT NULL DEFAULT 0 -- 같은 브라우저에서 이전에 제출한 횟수(재참여 구분용)
 );
 CREATE INDEX IF NOT EXISTS idx_survey_responses_submitted ON survey_responses (submitted_at);
@@ -28,12 +29,12 @@ CREATE INDEX IF NOT EXISTS idx_survey_responses_submitted ON survey_responses (s
 CREATE TABLE IF NOT EXISTS survey_flavor_ratings (
   response_id          TEXT NOT NULL REFERENCES survey_responses (id) ON DELETE CASCADE,
   flavor               TEXT NOT NULL CHECK (flavor IN ('moju', 'lotus', 'coffee')),
-  satisfaction         INTEGER NOT NULL CHECK (satisfaction BETWEEN 1 AND 5), -- Q6·Q10·Q14  1 매우 불만족 ~ 5 매우 만족
-  sweetness            INTEGER NOT NULL CHECK (sweetness BETWEEN 1 AND 5),    -- Q7·Q11·Q15 1 지나치게 약함 ~ 5 지나치게 강함
-  aroma                INTEGER NOT NULL CHECK (aroma BETWEEN 1 AND 5),        -- Q8·Q12·Q16 1 지나치게 약함 ~ 5 지나치게 강함
-  improvements         TEXT NOT NULL,                                         -- Q9·Q13·Q17 JSON 배열
+  satisfaction         INTEGER NOT NULL CHECK (satisfaction BETWEEN 1 AND 5), -- Q7·Q11·Q15  1 매우 불만족 ~ 5 매우 만족
+  sweetness            INTEGER NOT NULL CHECK (sweetness BETWEEN 1 AND 5),    -- Q8·Q12·Q16 1 지나치게 약함 ~ 5 지나치게 강함
+  aroma                INTEGER NOT NULL CHECK (aroma BETWEEN 1 AND 5),        -- Q9·Q13·Q17 1 지나치게 약함 ~ 5 지나치게 강함
+  improvements         TEXT NOT NULL,                                         -- Q10·Q14·Q18 JSON 배열
   improvements_other   TEXT,
-  concept_fit          INTEGER NOT NULL CHECK (concept_fit BETWEEN 1 AND 5),  -- Q20 제품명 기대 적합도
+  concept_fit          INTEGER NOT NULL CHECK (concept_fit BETWEEN 1 AND 5),  -- Q21 제품명 기대 적합도
   PRIMARY KEY (response_id, flavor)
 );
 CREATE INDEX IF NOT EXISTS idx_survey_flavor_ratings_flavor ON survey_flavor_ratings (flavor);
@@ -41,28 +42,28 @@ CREATE INDEX IF NOT EXISTS idx_survey_flavor_ratings_flavor ON survey_flavor_rat
 -- 응답자 1명 = 1행
 CREATE TABLE IF NOT EXISTS survey_purchase_intent (
   response_id              TEXT PRIMARY KEY REFERENCES survey_responses (id) ON DELETE CASCADE,
-  souv_freq                TEXT NOT NULL,    -- Q22
-  souv_spend_amount        INTEGER,          -- Q23 원 단위(Q22 '구매한 적 없음'이면 NULL)
-  souv_spend_unknown       INTEGER,          -- Q23 금액 기억 안 남(1/0, 비해당이면 NULL)
-  souv_target              TEXT NOT NULL,    -- Q24 JSON 배열
-  souv_criteria            TEXT NOT NULL,    -- Q25 JSON 배열(2개 또는 '구매할 생각 없음' 1개)
+  souv_freq                TEXT NOT NULL,    -- Q23
+  souv_spend_amount        INTEGER,          -- Q24 원 단위(Q23 '구매한 적 없음'이면 NULL)
+  souv_spend_unknown       INTEGER,          -- Q24 금액 기억 안 남(1/0, 비해당이면 NULL)
+  souv_target              TEXT NOT NULL,    -- Q25 JSON 배열
+  souv_criteria            TEXT NOT NULL,    -- Q26 JSON 배열(2개 또는 '구매할 생각 없음' 1개)
   souv_criteria_other      TEXT,
-  wtp_amount               INTEGER,          -- Q26 원 단위, 구매 의향 없음이면 NULL
-  wtp_no_intent            INTEGER NOT NULL, -- Q26 가격과 관계없이 구매 의향 없음(1/0)
-  wtp_revised_after_price  INTEGER NOT NULL DEFAULT 0, -- 가격 공개 이후 Q26를 수정했는지(1/0)
-  intent_27900             TEXT NOT NULL,    -- Q27
-  choice_30000             TEXT NOT NULL,    -- Q28
-  reason_buy               TEXT NOT NULL,    -- Q29① JSON 배열(최대 2개, Q28 전주BURI 선택자만)
+  wtp_amount               INTEGER,          -- Q27 원 단위, 구매 의향 없음이면 NULL
+  wtp_no_intent            INTEGER NOT NULL, -- Q27 가격과 관계없이 구매 의향 없음(1/0)
+  wtp_revised_after_price  INTEGER NOT NULL DEFAULT 0, -- 가격 공개 이후 Q27를 수정했는지(1/0)
+  intent_27900             TEXT NOT NULL,    -- Q28
+  choice_30000             TEXT NOT NULL,    -- Q29
+  reason_buy               TEXT NOT NULL,    -- Q30① JSON 배열(최대 2개, Q29 전주BURI 선택자만)
   reason_buy_other         TEXT,
-  reason_not               TEXT NOT NULL,    -- Q29② JSON 배열(최대 2개, Q28 그 외 선택자만)
+  reason_not               TEXT NOT NULL,    -- Q30② JSON 배열(최대 2개, Q29 그 외 선택자만)
   reason_not_other         TEXT,
-  lower_price_intent       TEXT,             -- Q29-1 1만 원대 중반 제품 라인 구매의향(Q29②에서 가격 관련 이유 선택자만, v4에서 추가)
-  info_needed              TEXT NOT NULL,    -- Q30 1개 선택
+  lower_price_intent       TEXT,             -- Q30-1 1만 원대 중반 제품 라인 구매의향(Q30②에서 가격 관련 이유 선택자만, v4에서 추가)
+  info_needed              TEXT NOT NULL,    -- Q31 1개 선택
   info_needed_other        TEXT,
-  improve_priority         TEXT NOT NULL,    -- Q31 1개 선택
+  improve_priority         TEXT NOT NULL,    -- Q32 1개 선택
   improve_priority_other   TEXT,
-  use_occasion             TEXT NOT NULL,    -- Q32 JSON 배열(v4부터 복수 선택, 이전 응답은 단일 코드 문자열)
-  channel                  TEXT NOT NULL,    -- Q33
-  online_intent            TEXT NOT NULL,    -- Q34
-  final_comment            TEXT              -- Q35
+  use_occasion             TEXT NOT NULL,    -- Q33 JSON 배열(v4부터 복수 선택, 이전 응답은 단일 코드 문자열)
+  channel                  TEXT NOT NULL,    -- Q34
+  online_intent            TEXT NOT NULL,    -- Q35
+  final_comment            TEXT              -- Q36
 );

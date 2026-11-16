@@ -179,6 +179,7 @@ function overview() {
     h('div', { class: 'ad-grid' },
       panel('응답 일자별 추이', '한국 시간 기준 제출 일자', barList(Object.keys(days).sort().map((d) => ({ label: d, count: days[d] })), n, { unit: '건' })),
       panel('연령대 분포', qn('age'), barList(countSingle('age', (r) => r.age_group), n)),
+      panel('성별 분포', `${qn('gender')} · 성별 문항 추가 이전 응답은 집계 제외`, barList(countSingle('gender', (r) => r.gender), data.filter((r) => r.gender).length)),
       panel('직업 분포', `${qn('occupation')} · v3 이전 응답은 집계 제외`, barList(countSingle('occupation', (r) => r.occupation), data.filter((r) => r.occupation).length)),
       panel('거주지역 분포', qn('residence'), barList(countSingle('residence', (r) => r.residence), n)),
       panel('전주 방문 경험 분포', qn('visit'), barList(countSingle('visit', (r) => r.jeonju_visit), n)),
@@ -293,14 +294,14 @@ function respondentSection() {
   const detail = h('div', { class: 'ad-detail', id: 'ad-detail', tabindex: '-1' });
   const rows = [...data].reverse().map((r) => [
     h('button', { type: 'button', class: 'ad-rowbtn', onclick: () => showDetail(r, detail) }, r.id.slice(0, 8)),
-    kst(r.submitted_at), labelOf('age', r.age_group), labelOf('occupation', r.occupation) || '–', labelOf('residence', r.residence), labelOf('visit', r.jeonju_visit), labelOf('moju_exp', r.moju_experience),
+    kst(r.submitted_at), labelOf('age', r.age_group), labelOf('gender', r.gender) || '–', labelOf('occupation', r.occupation) || '–', labelOf('residence', r.residence), labelOf('visit', r.jeonju_visit), labelOf('moju_exp', r.moju_experience),
     ...FLAVORS.map((f) => String(r.flavors[f.id]?.satisfaction ?? '–')),
     r.purchase?.wtp_no_intent ? '의향 없음' : r.purchase?.wtp_amount != null ? won(r.purchase.wtp_amount) : '–',
     labelOf('intent_27900', r.purchase?.intent_27900)]);
   return h('section', { class: 'ad-section', id: 'respondents', 'aria-labelledby': 're-t' },
     h('h2', { id: 're-t', text: '응답자별 원문 조회' }),
     h('div', { class: 'ad-panel' }, h('p', { class: 'ad-sub', text: '응답 번호를 누르면 전체 응답을 볼 수 있습니다. 최근 제출 순.' }),
-      tableEl(['응답 번호', '제출 일시', '연령대', '직업', '거주지역', '전주 방문', '모주 경험', '모주 만족', '연잎 만족', '커피 만족', '최대 지불의향', '27,900원 구매의향'], rows, [7, 8, 9, 10]),
+      tableEl(['응답 번호', '제출 일시', '연령대', '성별', '직업', '거주지역', '전주 방문', '모주 경험', '모주 만족', '연잎 만족', '커피 만족', '최대 지불의향', '27,900원 구매의향'], rows, [8, 9, 10, 11]),
       detail));
 }
 
@@ -321,6 +322,7 @@ function showDetail(r, box) {
     h('h4', { text: '응답자 정보' }),
     pairs([['제출 일시', kst(r.submitted_at)], ['소요시간', durationText(r.duration_sec)], ['설문 버전', r.survey_version],
       ['동일 기기 이전 제출', `${r.device_prior_submissions}회`], [`${qn('age')} 연령대`, labelOf('age', r.age_group)],
+      [`${qn('gender')} 성별`, r.gender ? labelOf('gender', r.gender) : '–'],
       [`${qn('occupation')} 직업`, r.occupation ? labelOf('occupation', r.occupation) + (r.occupation_other ? ` (기타: ${r.occupation_other})` : '') : '–'],
       [`${qn('residence')} 거주지역`, labelOf('residence', r.residence)],
       [`${qn('visit')} 전주 방문 경험`, labelOf('visit', r.jeonju_visit)], [`${qn('moju_exp')} 모주 음용 경험`, labelOf('moju_exp', r.moju_experience)]]),
