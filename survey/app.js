@@ -489,6 +489,10 @@ function renderIntro() {
     actions.push(h('button', { type: 'button', class: 'sv-btn sv-btn--primary sv-btn--block', id: 'sv-start', onclick: start }, '설문 시작하기'));
   }
   view.replaceChildren(h('section', { class: 'sv-start', 'aria-labelledby': 'sv-intro-title' },
+    h('div', { class: 'sv-alert sv-alert--warn', role: 'note', 'aria-label': '알레르기 주의' },
+      h('p', { class: 'sv-alert__title', text: '⚠ 알레르기 주의' }),
+      h('p', { text: '시나몬 또는 초콜릿에 알레르기가 있으신 분은 시식하지 마시기 바랍니다.' }),
+      h('p', { text: '시식 중이나 시식 후 이상 증상이 나타나면 즉시 섭취를 중단하고 진행자에게 알려 주세요.' })),
     h('p', { class: 'sv-eyebrow', text: '전주BURI 소비자 조사' }),
     h('h1', { class: 'sv-h1', id: 'sv-intro-title', tabindex: '-1', text: '전주BURI 기와 초콜릿 소비자 시식 및 시장반응 조사' }),
     h('div', { class: 'sv-start__body' },
