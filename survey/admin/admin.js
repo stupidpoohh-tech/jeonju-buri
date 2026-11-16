@@ -217,7 +217,7 @@ function flavorSection() {
         tableEl(['개선 요소', ...FLAVORS.map((f) => f.name)], improveRows, [1, 2, 3])),
       panel('가장 맛있는 초콜릿', qn('best_taste'), choice('best_taste', 'best_taste')),
       panel('가장 독특한 초콜릿', qn('most_unique'), choice('most_unique', 'most_unique')),
-      panel('전주 기념품으로 적합한 맛', qn('souvenir_fit'), choice('souvenir_fit', 'souvenir_fit'))));
+      panel('전주 기념품으로 적합한 맛', `${qn('souvenir_fit')} 복수 선택`, barList(countMulti('souvenir_fit', (r) => r.souvenir_fit), n))));
 }
 
 function purchaseSection() {
@@ -239,6 +239,7 @@ function purchaseSection() {
   spendBuckets.push({ label: '금액이 기억나지 않음', count: data.filter((r) => P(r).souv_spend_unknown === true).length });
   const atOrAbove = amounts.filter((x) => x >= PROPOSED_PRICE).length;
   const notBuri = data.filter((r) => P(r).choice_30000 && P(r).choice_30000 !== 'buri');
+  const lowerBase = data.filter((r) => P(r).lower_price_intent);
   const buri = data.filter((r) => P(r).choice_30000 === 'buri');
   const sp = (id) => barList(countSingle(id, (r) => P(r)[id]), n);
   const mp = (id, base) => barList(countMulti(id, (r) => P(r)[id], base), (base || data).length);
@@ -255,9 +256,11 @@ function purchaseSection() {
       panel('예산 30,000원 선택(경쟁상품 대비)', qn('choice_30000'), sp('choice_30000')),
       panel('선택 이유 (전주BURI 선택자)', `${qn('reason_buy')}① · 최대 2개 · 해당 응답자 ${buri.length}명 기준`, buri.length ? mp('reason_buy', buri) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
       panel('비선택 이유 (그 외 선택자)', `${qn('reason_not')}② · 최대 2개 · 해당 응답자 ${notBuri.length}명 기준`, notBuri.length ? mp('reason_not', notBuri) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
+      panel('1만 원대 중반 제품 라인 구매의향', `${qn('lower_price_intent')} · 가격 관련 비선택 이유 응답자 ${lowerBase.length}명 기준`,
+        lowerBase.length ? barList(countSingle('lower_price_intent', (r) => P(r).lower_price_intent), lowerBase.length) : h('p', { class: 'ad-empty', text: '해당 응답 없음' })),
       panel('구매 전 가장 먼저 확인하고 싶은 정보', qn('info_needed'), sp('info_needed')),
       panel('우선 개선 요소', qn('improve_priority'), sp('improve_priority')),
-      panel('적합한 구매 상황', qn('use_occasion'), sp('use_occasion')),
+      panel('적합한 구매 상황', `${qn('use_occasion')} 복수 선택`, mp('use_occasion')),
       panel('판매채널 선호도', qn('channel'), sp('channel')),
       panel('여행 후 온라인 구매의향', qn('online_intent'), sp('online_intent')),
       panel('최근 1년 기념품 구매 횟수', qn('souv_freq'), sp('souv_freq')),
@@ -324,7 +327,7 @@ function showDetail(r, box) {
     ...fl.flat(),
     h('h4', { text: '비교 평가' }),
     pairs([[`${qn('best_taste')} 가장 맛있는 초콜릿`, labelOf('best_taste', r.best_taste)], [`${qn('most_unique')} 가장 독특한 초콜릿`, labelOf('most_unique', r.most_unique)],
-      [`${qn('souvenir_fit')} 기념품 적합 맛`, labelOf('souvenir_fit', r.souvenir_fit)]]),
+      [`${qn('souvenir_fit')} 기념품 적합 맛`, list('souvenir_fit', r.souvenir_fit)]]),
     h('h4', { text: '구매 경험 · 구매의향' }),
     pairs([[`${qn('souv_freq')} 구매 횟수`, labelOf('souv_freq', p.souv_freq)],
       [`${qn('souv_spend')} 결제금액`, p.souv_spend_unknown ? '구매했으나 금액이 기억나지 않음' : p.souv_spend_amount != null ? won(p.souv_spend_amount) : '해당 없음'],
@@ -333,9 +336,10 @@ function showDetail(r, box) {
       [`${qn('wtp')} 가격 공개 후 수정`, p.wtp_revised_after_price ? '예' : '아니오'],
       [`${qn('intent_27900')} 27,900원 구매의향`, labelOf('intent_27900', p.intent_27900)], [`${qn('choice_30000')} 예산 30,000원 선택`, labelOf('choice_30000', p.choice_30000)],
       [`${qn('reason_buy')}① 선택 이유`, list('reason_buy', p.reason_buy, p.reason_buy_other)], [`${qn('reason_not')}② 비선택 이유`, list('reason_not', p.reason_not, p.reason_not_other)],
+      [`${qn('lower_price_intent')} 1만 원대 중반 제품 구매의향`, p.lower_price_intent ? labelOf('lower_price_intent', p.lower_price_intent) : '해당 없음'],
       [`${qn('info_needed')} 먼저 확인하고 싶은 정보`, labelOf('info_needed', p.info_needed) + (p.info_needed_other ? ` (기타: ${p.info_needed_other})` : '')],
       [`${qn('improve_priority')} 우선 개선 요소`, labelOf('improve_priority', p.improve_priority) + (p.improve_priority_other ? ` (기타: ${p.improve_priority_other})` : '')],
-      [`${qn('use_occasion')} 구매 상황`, labelOf('use_occasion', p.use_occasion)],
+      [`${qn('use_occasion')} 구매 상황`, list('use_occasion', p.use_occasion)],
       [`${qn('channel')} 판매채널`, labelOf('channel', p.channel)], [`${qn('online_intent')} 온라인 구매의향`, labelOf('online_intent', p.online_intent)],
       [`${qn('final_comment')} 최종 의견`, p.final_comment]]));
   box.focus();

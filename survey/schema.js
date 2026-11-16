@@ -2,7 +2,7 @@
 // 브라우저(설문·관리자 화면)와 Cloudflare Pages Functions(서버 검증·CSV)가 같은 모듈을 사용합니다.
 // 내부 저장에는 고정 문항 ID(id)를 사용하고, 화면 표시 번호(num)는 별도로 관리합니다.
 
-export const SURVEY_VERSION = '2026-11-v3';
+export const SURVEY_VERSION = '2026-11-v4';
 export const PROPOSED_PRICE = 27900;
 export const AMOUNT_MAX = 1000000;
 export const TEXT_MAX = 1000;
@@ -134,9 +134,9 @@ export const STEPS = [
         scaleEnds: ['전혀 어울리지 않음', '매우 잘 어울림'],
         rows: FLAVORS.map((f) => ({ id: `${f.id}_concept_fit`, flavor: f.id, label: f.name })),
         options: scaleOptions(['전혀 어울리지 않음', '어울리지 않음', '보통', '어울림', '매우 잘 어울림']) },
-      { id: 'souvenir_fit', num: 21, type: 'single', required: true, short: '기념품 적합 맛',
-        title: '세 가지 제품 중 전주 여행 기념품으로 가장 적합하다고 생각하는 맛은 무엇입니까?',
-        options: [...FLAVOR_CHOICE, opt('all', '세 가지 모두 적합함'), opt('none', '모두 적합하지 않음')] },
+      { id: 'souvenir_fit', num: 21, type: 'multi', required: true, short: '기념품 적합 맛',
+        title: '세 가지 제품 중 전주 여행 기념품으로 가장 적합하다고 생각하는 맛은 무엇입니까?', hint: '복수 선택 가능',
+        options: [...FLAVOR_CHOICE, opt('none', '모두 적합하지 않음', { exclusive: true })] },
     ],
   },
   {
@@ -189,9 +189,11 @@ export const STEPS = [
           opt('unlikely', '구매할 가능성이 낮음'), opt('no', '구매하지 않을 것임')] },
       { id: 'choice_30000', num: 28, type: 'single', required: true, short: '예산 3만원 선택',
         title: '전주 여행을 마치기 전, 먹거리 기념품을 하나만 구매할 수 있고 예산은 30,000원이라고 가정하겠습니다. 무엇을 선택하시겠습니까?',
+        image: { src: './images/competitor-chocopie.webp', width: 857, height: 581,
+          alt: '주황색 선물 상자와 개별 포장된 수제 초코파이', caption: '비교 상품 예시 · 초코파이 10개 23,000원' },
         options: [opt('buri', '전주BURI 기와 초콜릿 9구 (27,900원)'), opt('known', '기존에 알고 있거나 선호하는 전주 먹거리 기념품'),
           opt('other_food', '다른 종류의 먹거리 기념품'), opt('save', '먹거리 기념품을 구매하지 않고 돈을 아끼겠음')] },
-      // Q28은 Q27 응답에 따라 ① 선택 이유(reason_buy) 또는 ② 비선택 이유(reason_not) 중 하나만 표시합니다.
+      // Q29는 Q28 응답에 따라 ① 선택 이유(reason_buy) 또는 ② 비선택 이유(reason_not) 중 하나만 표시합니다.
       { id: 'reason_buy', num: 29, type: 'multi', required: true, max: 2, short: '선택 이유',
         title: REASON_TITLE, hint: '최대 2개 선택', note: 'Q28에서 전주BURI 기와 초콜릿을 선택하신 이유를 골라 주세요.',
         showIf: { id: 'choice_30000', in: ['buri'] },
@@ -202,11 +204,18 @@ export const STEPS = [
       { id: 'reason_not', num: 29, type: 'multi', required: true, max: 2, short: '비선택 이유',
         title: REASON_TITLE, hint: '최대 2개 선택', note: 'Q28에서 전주BURI 기와 초콜릿 이외의 선택지를 고르신 이유를 골라 주세요.',
         showIf: { id: 'choice_30000', notIn: ['buri'] },
-        options: [opt('small_qty', '가격에 비해 초콜릿 양이 적다고 느껴져서'), opt('quality_doubt', '초콜릿의 맛과 품질을 충분히 확신하지 못해서'),
+        options: [opt('price_high', '27,900원이라는 가격이 비싸게 느껴져서'), opt('small_qty', '가격에 비해 초콜릿 양이 적다고 느껴져서'), opt('quality_doubt', '초콜릿의 맛과 품질을 충분히 확신하지 못해서'),
           opt('not_special', '전주 기념품으로서의 특별함이 부족해서'), opt('prefer_other', '이미 선호하는 다른 상품이 있어서'),
           opt('taste_mismatch', '선물받을 사람의 취향과 맞지 않아서'), opt('storage', '초콜릿의 보관·운반이 걱정되어서'),
           opt('package', '패키지나 디자인이 기대에 미치지 못해서'), opt('no_interest', '초콜릿 선물 자체에 관심이 없어서'),
           opt('no_spend', '기념품 구매에 돈을 쓰고 싶지 않아서'), OTHER()] },
+      // Q29-1: Q29②에서 가격 관련 이유를 고른 경우에만 표시하는 후속 문항
+      { id: 'lower_price_intent', num: '29-1', type: 'single', required: true, short: '1만 원대 중반 제품 구매의향',
+        title: '가격이 1만 원대 중반인 다른 상품 구성의 제품 라인이 있다면 구매하시겠습니까?',
+        note: '앞 문항에서 가격과 관련된 이유를 선택하셔서 추가로 여쭙니다.',
+        showIf: { id: 'reason_not', includesAny: ['price_high', 'small_qty'] },
+        options: [opt('definitely', '반드시 구매할 것 같음'), opt('likely', '구매할 가능성이 높음'), opt('maybe', '상황에 따라 구매할 수도 있음'),
+          opt('unlikely', '구매할 가능성이 낮음'), opt('no', '구매하지 않을 것임')] },
     ],
   },
   {
@@ -227,11 +236,11 @@ export const STEPS = [
         options: [opt('price_down', '가격 인하'), opt('size_up', '초콜릿 크기 또는 수량 확대'), opt('taste', '맛의 완성도 향상'),
           opt('local', '전주 특색을 느낄 수 있는 요소 강화'), opt('package', '패키지 고급화'), opt('portable', '보관 및 휴대 편의성 개선'),
           opt('enough', '현재 구성으로 충분함'), OTHER()] },
-      { id: 'use_occasion', num: 32, type: 'single', required: true, short: '적합한 구매 상황',
-        title: '이 제품을 실제로 구매한다면 어떤 상황이 가장 적합하다고 생각하십니까?',
+      { id: 'use_occasion', num: 32, type: 'multi', required: true, short: '적합한 구매 상황',
+        title: '이 제품을 실제로 구매한다면 어떤 상황이 가장 적합하다고 생각하십니까?', hint: '복수 선택 가능',
         options: [opt('gift_close', '전주 여행 중 가족·연인·친구를 위한 특별한 선물'), opt('gift_work', '전주 여행 중 직장 동료·지인에게 주는 선물'),
           opt('self', '본인이 먹기 위한 여행 기념품'), opt('special_day', '명절·기념일 등 특별한 날의 선물'),
-          opt('online_rebuy', '여행 후 온라인 재구매'), opt('none', '구매할 상황이 떠오르지 않음')] },
+          opt('online_rebuy', '여행 후 온라인 재구매'), opt('none', '구매할 상황이 떠오르지 않음', { exclusive: true })] },
     ],
   },
   {
@@ -258,8 +267,12 @@ export const QUESTION_BY_ID = Object.fromEntries(ALL_QUESTIONS.map((q) => [q.id,
 
 export function isVisible(q, answers) {
   if (!q.showIf) return true;
+  // 조건의 기준 문항이 숨겨져 있으면 이 문항도 숨깁니다(연쇄 조건).
+  const parent = QUESTION_BY_ID[q.showIf.id];
+  if (parent && !isVisible(parent, answers)) return false;
   const v = answers[q.showIf.id];
   if (v === undefined || v === null || v === '') return false;
+  if (q.showIf.includesAny) return Array.isArray(v) && v.some((x) => q.showIf.includesAny.includes(x));
   if (q.showIf.in) return q.showIf.in.includes(v);
   if (q.showIf.notIn) return !q.showIf.notIn.includes(v);
   return true;
@@ -368,7 +381,7 @@ export function normalizeAnswers(answers) {
     moju_experience: single('moju_exp'),
     best_taste: single('best_taste'),
     most_unique: single('most_unique'),
-    souvenir_fit: single('souvenir_fit'),
+    souvenir_fit: multi('souvenir_fit'),
   };
   const flavors = FLAVORS.map((f) => ({
     flavor: f.id,
@@ -400,7 +413,8 @@ export function normalizeAnswers(answers) {
     info_needed_other: otherFor('info_needed'),
     improve_priority: single('improve_priority'),
     improve_priority_other: otherFor('improve_priority'),
-    use_occasion: single('use_occasion'),
+    use_occasion: multi('use_occasion'),
+    lower_price_intent: single('lower_price_intent'),
     channel: single('channel'),
     online_intent: single('online_intent'),
     final_comment: cleanText(answers.final_comment, TEXT_MAX),

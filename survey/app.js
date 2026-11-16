@@ -104,7 +104,11 @@ function legend(q, extra) {
 function questionShell(q, ...body) {
   const err = h('p', { class: 'sv-q__error', id: `q-${q.id}-error`, role: 'alert' });
   const fs = h('fieldset', { class: 'sv-q', id: `q-${q.id}`, 'data-qid': q.id, 'aria-describedby': `q-${q.id}-error` },
-    legend(q), q.note ? h('p', { class: 'sv-q__note', text: `※ ${q.note}` }) : null, ...body, err);
+    legend(q), q.note ? h('p', { class: 'sv-q__note', text: `※ ${q.note}` }) : null,
+    q.image ? h('figure', { class: 'sv-q__figure' },
+      h('img', { src: q.image.src, alt: q.image.alt, width: q.image.width, height: q.image.height, loading: 'lazy', decoding: 'async' }),
+      q.image.caption ? h('figcaption', { text: q.image.caption }) : null) : null,
+    ...body, err);
   if (!isVisible(q, state.answers)) fs.hidden = true;
   return fs;
 }
@@ -290,9 +294,9 @@ function changed(qid) {
   const q = QUESTION_BY_ID[qid];
   const fs = $(`#q-${qid}`);
   if (fs && fs.classList.contains('is-error') && !validateQuestion(q, state.answers)) setError(qid, null);
-  // 조건부 문항 표시
+  // 조건부 문항 표시(연쇄 조건까지 모두 다시 계산)
   for (const step of STEPS) for (const other of step.questions) {
-    if (!other.showIf || other.showIf.id !== qid) continue;
+    if (!other.showIf) continue;
     const el = $(`#q-${other.id}`);
     if (el) { const vis = isVisible(other, state.answers); if (el.hidden === vis) { el.hidden = !vis; if (!vis) setError(other.id, null); } }
   }

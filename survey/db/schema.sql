@@ -1,4 +1,4 @@
--- 전주BURI 기와 초콜릿 소비자 설문 — Cloudflare D1(SQLite) 스키마 (설문 버전 2026-11-v3)
+-- 전주BURI 기와 초콜릿 소비자 설문 — Cloudflare D1(SQLite) 스키마 (설문 버전 2026-11-v4)
 -- 기존 서비스에는 데이터베이스가 없으므로 설문 전용 D1 데이터베이스에 적용합니다.
 -- 적용: npx wrangler d1 execute <DB 이름> --remote --file=survey/db/schema.sql
 -- 선택지 값은 survey/schema.js의 고정 코드로 저장합니다(표시 문구는 schema.js에서 매핑).
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS survey_responses (
   moju_experience          TEXT NOT NULL,             -- Q5
   best_taste               TEXT NOT NULL,             -- Q18
   most_unique              TEXT NOT NULL,             -- Q19
-  souvenir_fit             TEXT NOT NULL,             -- Q21
+  souvenir_fit             TEXT NOT NULL,             -- Q21 JSON 배열(v4부터 복수 선택, 이전 응답은 단일 코드 문자열)
   device_prior_submissions INTEGER NOT NULL DEFAULT 0 -- 같은 브라우저에서 이전에 제출한 횟수(재참여 구분용)
 );
 CREATE INDEX IF NOT EXISTS idx_survey_responses_submitted ON survey_responses (submitted_at);
@@ -56,11 +56,12 @@ CREATE TABLE IF NOT EXISTS survey_purchase_intent (
   reason_buy_other         TEXT,
   reason_not               TEXT NOT NULL,    -- Q29② JSON 배열(최대 2개, Q28 그 외 선택자만)
   reason_not_other         TEXT,
+  lower_price_intent       TEXT,             -- Q29-1 1만 원대 중반 제품 라인 구매의향(Q29②에서 가격 관련 이유 선택자만, v4에서 추가)
   info_needed              TEXT NOT NULL,    -- Q30 1개 선택
   info_needed_other        TEXT,
   improve_priority         TEXT NOT NULL,    -- Q31 1개 선택
   improve_priority_other   TEXT,
-  use_occasion             TEXT NOT NULL,    -- Q32
+  use_occasion             TEXT NOT NULL,    -- Q32 JSON 배열(v4부터 복수 선택, 이전 응답은 단일 코드 문자열)
   channel                  TEXT NOT NULL,    -- Q33
   online_intent            TEXT NOT NULL,    -- Q34
   final_comment            TEXT              -- Q35
