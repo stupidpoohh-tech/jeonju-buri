@@ -6,30 +6,37 @@
  <meta name="robots" content="noindex, nofollow">
  <meta name="theme-color" content="#ffffff">
  <meta name="format-detection" content="telephone=no">
- <title>전주BURI 기와 초콜릿 소비자 시식 및 시장반응 조사</title>
+ <title>Chocolate Tasting Survey · 초콜릿 시식 설문</title>
  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
- <link rel="stylesheet" href="./survey.css?v=2026-11-v1">
- <script type="module" src="./app.js?v=2026-11-v1"></script>
+ <link rel="stylesheet" href="/survey/survey.css?v=2026-11-v5">
 </head>
 <body class="sv">
- <a class="sv-skip" href="#sv-main">본문으로 이동</a>
- <header class="sv-top" id="sv-top" hidden>
-  <div class="sv-top__inner">
-   <p class="sv-top__label"><span id="sv-section"></span><span class="sv-top__count" id="sv-count"></span></p>
-   <div class="sv-progress" role="progressbar" aria-label="설문 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="sv-progress"><span class="sv-progress__bar" id="sv-progress-bar"></span></div>
-  </div>
- </header>
- <main class="sv-main" id="sv-main" tabindex="-1">
-  <noscript><div class="sv-card"><p>이 설문은 JavaScript가 필요합니다. 브라우저 설정에서 JavaScript를 켠 뒤 다시 접속해 주세요.</p></div></noscript>
-  <div id="sv-view" aria-live="off"></div>
+ <main class="sv-main sv-langpage" id="sv-main">
+  <section class="sv-lang" aria-labelledby="sv-lang-title">
+   <p class="sv-eyebrow sv-lang__brand">JEONJU BURI</p>
+   <h1 class="sv-h1" id="sv-lang-title">Chocolate Tasting Survey</h1>
+   <p class="sv-lang__lead"><span lang="ko">설문에 사용할 언어를 선택해 주세요.</span><br><span lang="en">Please select your language.</span></p>
+   <div class="sv-langs">
+    <a class="sv-langcard" href="ko/" lang="ko" data-lang-link>
+     <span class="sv-langcard__name">한국어</span>
+     <span class="sv-langcard__action">한국어 설문 시작하기</span>
+    </a>
+    <a class="sv-langcard" href="en/" lang="en" data-lang-link>
+     <span class="sv-langcard__name">English</span>
+     <span class="sv-langcard__action">Start the survey in English</span>
+    </a>
+   </div>
+  </section>
  </main>
- <nav class="sv-nav" id="sv-nav" aria-label="설문 단계 이동" hidden>
-  <div class="sv-nav__inner">
-   <button type="button" class="sv-btn sv-btn--ghost" id="sv-prev">이전</button>
-   <button type="button" class="sv-btn sv-btn--primary" id="sv-next">다음</button>
-  </div>
- </nav>
- <div class="sv-sr" role="status" aria-live="polite" id="sv-status"></div>
+ <script>
+  // 조사 경로(source) 등 쿼리 파라미터를 언어별 설문으로 그대로 넘깁니다.
+  (function () {
+    var q = location.search;
+    if (!q) return;
+    var links = document.querySelectorAll('[data-lang-link]');
+    for (var i = 0; i < links.length; i++) links[i].setAttribute('href', links[i].getAttribute('href') + q);
+  })();
+ </script>
 </body>
 </html>
