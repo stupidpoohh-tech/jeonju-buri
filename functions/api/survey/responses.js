@@ -68,24 +68,24 @@ export async function onRequestPost({ request, env }) {
 
   const submittedAt = now.toISOString();
   const stmts = [
-    db.prepare(`INSERT INTO survey_responses (id, survey_version, submitted_at, started_at, duration_sec, age_group, occupation, occupation_other,
-      residence, jeonju_visit, moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-      .bind(responseId, SURVEY_VERSION, submittedAt, started, duration, respondent.age_group, respondent.occupation, respondent.occupation_other,
+    db.prepare(`INSERT INTO survey_responses (id, survey_version, submitted_at, started_at, duration_sec, age_group, gender, occupation, occupation_other,
+      residence, jeonju_visit, moju_experience, best_taste, most_unique, souvenir_fit, device_prior_submissions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      .bind(responseId, SURVEY_VERSION, submittedAt, started, duration, respondent.age_group, respondent.gender, respondent.occupation, respondent.occupation_other,
         respondent.residence, respondent.jeonju_visit,
-        respondent.moju_experience, respondent.best_taste, respondent.most_unique, respondent.souvenir_fit, prior),
+        respondent.moju_experience, respondent.best_taste, respondent.most_unique, JSON.stringify(respondent.souvenir_fit), prior),
     ...flavors.map((f) => db.prepare(`INSERT INTO survey_flavor_ratings (response_id, flavor, satisfaction, sweetness, aroma,
       improvements, improvements_other, concept_fit) VALUES (?,?,?,?,?,?,?,?)`)
       .bind(responseId, f.flavor, f.satisfaction, f.sweetness, f.aroma, JSON.stringify(f.improvements), f.improvements_other, f.concept_fit)),
     db.prepare(`INSERT INTO survey_purchase_intent (response_id, souv_freq, souv_spend_amount, souv_spend_unknown, souv_target, souv_criteria,
       souv_criteria_other, wtp_amount, wtp_no_intent, wtp_revised_after_price, intent_27900, choice_30000, reason_buy, reason_buy_other,
-      reason_not, reason_not_other, info_needed, info_needed_other, improve_priority, improve_priority_other, use_occasion, channel,
-      online_intent, final_comment) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      reason_not, reason_not_other, lower_price_intent, info_needed, info_needed_other, improve_priority, improve_priority_other, use_occasion,
+      channel, online_intent, final_comment) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
       .bind(responseId, purchase.souv_freq, purchase.souv_spend_amount, purchase.souv_spend_unknown === null ? null : purchase.souv_spend_unknown ? 1 : 0,
         JSON.stringify(purchase.souv_target), JSON.stringify(purchase.souv_criteria), purchase.souv_criteria_other,
         purchase.wtp_amount, purchase.wtp_no_intent ? 1 : 0, revised, purchase.intent_27900, purchase.choice_30000,
-        JSON.stringify(purchase.reason_buy), purchase.reason_buy_other, JSON.stringify(purchase.reason_not), purchase.reason_not_other,
+        JSON.stringify(purchase.reason_buy), purchase.reason_buy_other, JSON.stringify(purchase.reason_not), purchase.reason_not_other, purchase.lower_price_intent,
         purchase.info_needed, purchase.info_needed_other, purchase.improve_priority, purchase.improve_priority_other,
-        purchase.use_occasion, purchase.channel, purchase.online_intent, purchase.final_comment),
+        JSON.stringify(purchase.use_occasion), purchase.channel, purchase.online_intent, purchase.final_comment),
   ];
 
   try {

@@ -46,6 +46,8 @@ export async function requireAdmin(request, env) {
 const parseList = (v) => {
   try { const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
 };
+// v3 이전에는 단일 선택으로 저장된 문항(Q21, Q32)을 배열로 맞춥니다.
+const parseListOrSingle = (v) => (typeof v === 'string' && v && !v.startsWith('[') ? [v] : parseList(v));
 
 // 저장된 응답 전체를 응답자 단위 객체로 불러옵니다(제출 시각 오름차순).
 export async function loadResponses(db) {
@@ -63,6 +65,7 @@ export async function loadResponses(db) {
   const purchaseBy = new Map();
   for (const row of p.results) {
     for (const k of ['souv_target', 'souv_criteria', 'reason_not', 'reason_buy']) row[k] = parseList(row[k]);
+    row.use_occasion = parseListOrSingle(row.use_occasion);
     row.souv_spend_unknown = row.souv_spend_unknown === null ? null : row.souv_spend_unknown === 1;
     row.wtp_no_intent = row.wtp_no_intent === 1;
     row.wtp_revised_after_price = row.wtp_revised_after_price === 1;
@@ -70,6 +73,7 @@ export async function loadResponses(db) {
   }
   return r.results.map((row) => ({
     ...row,
+    souvenir_fit: parseListOrSingle(row.souvenir_fit),
     flavors: flavorsBy.get(row.id) || {},
     purchase: purchaseBy.get(row.id) || {},
   }));
@@ -125,6 +129,7 @@ export function respondentsCsv(responses) {
   };
 
   singleCol('age', (r) => r.age_group);
+  singleCol('gender', (r) => r.gender);
   singleCol('occupation', (r) => r.occupation);
   add(`Q${q('occupation').num} ${q('occupation').short}: 기타 내용 [occupation_other]`, (r) => r.occupation_other);
   singleCol('residence', (r) => r.residence);
@@ -148,7 +153,7 @@ export function respondentsCsv(responses) {
   singleCol('best_taste', (r) => r.best_taste);
   singleCol('most_unique', (r) => r.most_unique);
   FLAVORS.forEach((f) => add(`Q${q('concept_fit').num} ${f.short} 제품명 기대 적합도(1-5) [${f.id}_concept_fit]`, (r) => (r.flavors[f.id] || {}).concept_fit));
-  singleCol('souvenir_fit', (r) => r.souvenir_fit);
+  multiCols('souvenir_fit', (r) => r.souvenir_fit);
 
   const p = (key) => (r) => r.purchase[key];
   singleCol('souv_freq', p('souv_freq'));
@@ -163,11 +168,12 @@ export function respondentsCsv(responses) {
   singleCol('choice_30000', p('choice_30000'));
   multiCols('reason_buy', p('reason_buy'), p('reason_buy_other'));
   multiCols('reason_not', p('reason_not'), p('reason_not_other'));
+  singleCol('lower_price_intent', p('lower_price_intent'));
   singleCol('info_needed', p('info_needed'));
   add(`Q${q('info_needed').num} ${q('info_needed').short}: 기타 내용 [info_needed_other]`, p('info_needed_other'));
   singleCol('improve_priority', p('improve_priority'));
   add(`Q${q('improve_priority').num} ${q('improve_priority').short}: 기타 내용 [improve_priority_other]`, p('improve_priority_other'));
-  singleCol('use_occasion', p('use_occasion'));
+  multiCols('use_occasion', p('use_occasion'));
   singleCol('channel', p('channel'));
   singleCol('online_intent', p('online_intent'));
   add(`Q${q('final_comment').num} 최종 자유의견 [final_comment]`, p('final_comment'));
@@ -177,7 +183,7 @@ export function respondentsCsv(responses) {
 
 // 맛별 평가 1행(롱) CSV: 응답자 × 맛
 export function flavorsCsv(responses) {
-  const header = ['응답ID [response_id]', '제출일시 KST [submitted_at]', '연령대 [age_group]', '직업 [occupation]', '거주지역 [residence]', '모주 음용 경험 [moju_experience]',
+  const header = ['응답ID [response_id]', '제출일시 KST [submitted_at]', '연령대 [age_group]', '성별 [gender]', '직업 [occupation]', '거주지역 [residence]', '모주 음용 경험 [moju_experience]',
     '맛 [flavor]', '맛 이름 [flavor_name]', '만족도(1-5) [satisfaction]', '단맛(1-5) [sweetness]', '단맛 응답 [sweetness_label]',
     '향·풍미(1-5) [aroma]', '향·풍미 응답 [aroma_label]',
     ...FLAVOR_OPTIONS.improvements.map((o) => `개선: ${o.label} [improve__${o.value}]`),
@@ -187,7 +193,7 @@ export function flavorsCsv(responses) {
     for (const f of FLAVORS) {
       const x = r.flavors[f.id];
       if (!x) continue;
-      rows.push([r.id, kstString(r.submitted_at), labelOf('age', r.age_group), labelOf('occupation', r.occupation), labelOf('residence', r.residence), labelOf('moju_exp', r.moju_experience),
+      rows.push([r.id, kstString(r.submitted_at), labelOf('age', r.age_group), labelOf('gender', r.gender), labelOf('occupation', r.occupation), labelOf('residence', r.residence), labelOf('moju_exp', r.moju_experience),
         f.id, flavorName(f.id), x.satisfaction, x.sweetness, optLabel(FLAVOR_OPTIONS.sweetness, x.sweetness),
         x.aroma, optLabel(FLAVOR_OPTIONS.aroma, x.aroma),
         ...FLAVOR_OPTIONS.improvements.map((o) => (x.improvements.includes(o.value) ? 1 : 0)),

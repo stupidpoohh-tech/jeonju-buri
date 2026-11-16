@@ -104,7 +104,11 @@ function legend(q, extra) {
 function questionShell(q, ...body) {
   const err = h('p', { class: 'sv-q__error', id: `q-${q.id}-error`, role: 'alert' });
   const fs = h('fieldset', { class: 'sv-q', id: `q-${q.id}`, 'data-qid': q.id, 'aria-describedby': `q-${q.id}-error` },
-    legend(q), q.note ? h('p', { class: 'sv-q__note', text: `※ ${q.note}` }) : null, ...body, err);
+    legend(q), q.note ? h('p', { class: 'sv-q__note', text: `※ ${q.note}` }) : null,
+    q.image ? h('figure', { class: 'sv-q__figure' },
+      h('img', { src: q.image.src, alt: q.image.alt, width: q.image.width, height: q.image.height, loading: 'lazy', decoding: 'async' }),
+      q.image.caption ? h('figcaption', { text: q.image.caption }) : null) : null,
+    ...body, err);
   if (!isVisible(q, state.answers)) fs.hidden = true;
   return fs;
 }
@@ -290,9 +294,9 @@ function changed(qid) {
   const q = QUESTION_BY_ID[qid];
   const fs = $(`#q-${qid}`);
   if (fs && fs.classList.contains('is-error') && !validateQuestion(q, state.answers)) setError(qid, null);
-  // 조건부 문항 표시
+  // 조건부 문항 표시(연쇄 조건까지 모두 다시 계산)
   for (const step of STEPS) for (const other of step.questions) {
-    if (!other.showIf || other.showIf.id !== qid) continue;
+    if (!other.showIf) continue;
     const el = $(`#q-${other.id}`);
     if (el) { const vis = isVisible(other, state.answers); if (el.hidden === vis) { el.hidden = !vis; if (!vis) setError(other.id, null); } }
   }
@@ -496,14 +500,12 @@ function renderIntro() {
     h('p', { class: 'sv-eyebrow', text: '전주BURI 소비자 조사' }),
     h('h1', { class: 'sv-h1', id: 'sv-intro-title', tabindex: '-1', text: '전주BURI 기와 초콜릿 소비자 시식 및 시장반응 조사' }),
     h('div', { class: 'sv-start__body' },
-      h('p', { text: '안녕하세요.' }),
-      h('p', { text: '본 설문은 전주의 문화적 특징을 담은 초콜릿 신제품의 맛과 상품성을 검토하기 위한 조사입니다.' }),
-      h('p', { text: '시식하는 초콜릿은 개발 중인 시제품이며, 응답 결과는 제품의 맛과 구성, 판매가격 및 상품성 개선을 위한 자료로 활용됩니다.' }),
-      h('p', { text: '본 설문은 특정 연령대에 한정하지 않으며, 다양한 소비자의 의견을 수집합니다. 제품을 구매할 의향이 없거나 맛이 만족스럽지 않더라도 솔직하게 응답해 주세요.' }),
-      h('p', { text: '설문은 익명으로 진행되며, 성명·소속 부서 등 개인 식별정보는 수집하지 않습니다. 응답 결과는 통계 및 제품 개선 목적으로 활용됩니다.' })),
+      h('p', { text: '개발 중인 초콜릿 시제품의 맛과 상품성을 알아보는 설문입니다.' }),
+      h('p', { text: '정답은 없습니다. 맛이 아쉽거나 살 생각이 없어도 솔직하게 답해 주세요.' })),
     h('ul', { class: 'sv-facts' },
       h('li', {}, h('b', { text: '시식 제품' }), '모주·연잎·커피 초콜릿 3종'),
-      h('li', {}, h('b', { text: '구성' }), `${STEPS.length}단계, 이전 단계로 돌아가 수정할 수 있습니다.`)),
+      h('li', {}, h('b', { text: '구성' }), `${STEPS.length}단계 · 이전 단계로 돌아가 수정 가능`),
+      h('li', {}, h('b', { text: '익명' }), '이름·소속 등 개인정보는 수집하지 않음')),
     notices,
     h('div', { class: 'sv-actions' }, actions)));
 }

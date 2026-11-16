@@ -206,3 +206,7 @@ body.sv {
 /* 알레르기 주의 */
 .sv-alert--warn { margin-bottom: 1.5rem; border: 2px solid #b45309; background: #fff7ed; color: #6b2f05; }
 .sv-alert__title { font-weight: 700; font-size: 1rem; color: #9a3412; }
+/* 문항 내 참고 이미지 */
+.sv-q__figure { clear: both; margin: 0 0 1rem; border: 1px solid var(--sv-line); border-radius: 10px; overflow: hidden; background: #fff; }
+.sv-q__figure img { display: block; width: 100%; height: auto; max-height: 50vh; object-fit: contain; }
+.sv-q__figure figcaption { padding: .55rem .75rem; border-top: 1px solid var(--sv-line); font-size: .875rem; font-weight: 600; color: var(--sv-ink-2); background: var(--sv-subtle); }
